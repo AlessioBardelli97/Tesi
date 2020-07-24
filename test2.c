@@ -61,7 +61,9 @@ int main(int argc, char *argv[]) {
             
                 CreaCEX(bm, funzione[i]);
                 
+                printf("Numero di prodotti della CEX che rappresenta lo spazio affine: ");
                 printf ("%d\n", funzione[i]->NumCEXProducts);
+
                 for (j = 0; j < funzione[i]->NumCEXProducts; j++)
                 	printf ("%s\n", funzione[i]->CEXProducts[j]);
             }
