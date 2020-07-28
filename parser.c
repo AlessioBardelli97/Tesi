@@ -68,6 +68,7 @@ boolean_function_t* parse_pla(DdManager* manager, char* file_path, int alfa)
 
             dbg_printf("Numero di input della funzione: %i\n", inputs);
         }
+        
         else if(line[0]=='.' && line[1]=='o')
         {
             fscanf(pla_file, "%d\n", &outputs);
@@ -91,6 +92,7 @@ boolean_function_t* parse_pla(DdManager* manager, char* file_path, int alfa)
                 Cudd_Ref(dc_set[i]);
             }
         }
+        
         else
         {
             char out_lines[MAX_LINE_LENGTH], output;

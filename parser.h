@@ -1,7 +1,7 @@
 #ifndef _PLA_PARSER_
 #define _PLA_PARSER_
 
-#include <cudd.h>
+// #include <cudd.h>
 #include <stdio.h>
 
 #define MAX_LINE_LENGTH 1024

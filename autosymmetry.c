@@ -5,7 +5,7 @@
 #include "autosymmetry.h"
 #include "debug.h"
 
-static inline DdNode* difference(DdNode* a, DdNode* b)
+static inline DdNode* difference(DdNode* a, DdNode* b) 
 {
     // A\B = A and not(B)
 
@@ -15,7 +15,7 @@ static inline DdNode* difference(DdNode* a, DdNode* b)
     return res;
 }
 
-static DdNode* translate(DdNode* Space, DdNode* u, int inputs, int set)
+static DdNode* translate(DdNode* Space, DdNode* u, int inputs, int set) 
 {
     int* cube = calloc(2*inputs, sizeof(int));
 
@@ -96,12 +96,12 @@ static DdNode* translate(DdNode* Space, DdNode* u, int inputs, int set)
     return g1;
 }
 
-void init()
+void init() 
 {
     manager = Cudd_Init(0,0,CUDD_UNIQUE_SLOTS,CUDD_CACHE_SLOTS,0);
 }
 
-DdNode* buildNewF(DdNode* f, DdNode* Ls, int inputs)
+DdNode* buildNewF(DdNode* f, DdNode* Ls, int inputs) 
 {
     DdNode* f_new = f;
     Cudd_Ref(f);
@@ -172,7 +172,7 @@ DdNode* buildNewF(DdNode* f, DdNode* Ls, int inputs)
     return f_new;
 }
 
-DdNode* restrictionFunction(DdNode* u, int *cv, int inputs)
+DdNode* restrictionFunction(DdNode* u, int *cv, int inputs) 
 {
     DdNode* g = u;
     Cudd_Ref(u);
@@ -199,7 +199,7 @@ DdNode* restrictionFunction(DdNode* u, int *cv, int inputs)
     return g;
 }
 
-int* computeCanonicalVariables(DdNode* Lf, int i, int inputs, int *cv)
+int* computeCanonicalVariables(DdNode* Lf, int i, int inputs, int *cv) 
 {
     // implementa l'algoritmo ricorsivo per il calcolo delle variabili canoniche
 
@@ -270,7 +270,7 @@ int* computeCanonicalVariables(DdNode* Lf, int i, int inputs, int *cv)
     return cv;
 }
 
-DdNode* buildS(DdNode* u, DdNode* g1, int inputs)
+DdNode* buildS(DdNode* u, DdNode* g1, int inputs) 
 {
     DdNode* g2; 
     DdNode* g3; 
@@ -334,7 +334,7 @@ DdNode* buildS(DdNode* u, DdNode* g1, int inputs)
     return g4;
 }
 
-DdNode* buildLf(DdNode* g1, int inputs)
+DdNode* buildLf(DdNode* g1, int inputs) 
 {
     // analogo a buildS
 
@@ -392,7 +392,7 @@ DdNode* buildLf(DdNode* g1, int inputs)
     return g4;
 }
 
-DdNode* extractVectorSpace(DdNode* S, DdNode* Ls, int inputs)
+DdNode* extractVectorSpace(DdNode* S, DdNode* Ls, int inputs) 
 {
     DdNode** vars = calloc(2*inputs, sizeof(DdNode*));
 
@@ -486,7 +486,7 @@ DdNode* extractVectorSpace(DdNode* S, DdNode* Ls, int inputs)
     return g1;
 }
 
-Eqns_t* reductionEquations(DdNode* h, int i, int inputs, EQ_manager *eq_man)
+Eqns_t* reductionEquations(DdNode* h, int i, int inputs, EQ_manager *eq_man) 
 {
 	if (h == Cudd_ReadOne(manager) || h == Cudd_ReadLogicZero(manager) || i>=inputs)
 	{
@@ -546,18 +546,14 @@ Eqns_t* reductionEquations(DdNode* h, int i, int inputs, EQ_manager *eq_man)
 	}
 }
 
-DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs) {
+DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
 
 	vProduct XorInput=NULL;
 	binmat *bm=NULL; MO_SOP funzione=NULL;
     int i, uscite, numRi; Product alpha = NULL;
     DdNode* result = NULL;
     
-    // Stampo l'insieme S su un file .pla
-    printPla(manager, "S.pla", S, numInputs);
-    
-    // Carico la rappresentazione .pla di S,
-    // in una MO_SOP
+    printPla (manager, "S.pla", S, b_alpha ? 2*numInputs : numInputs);
     LoadPLA ("S.pla", &funzione, &uscite);
     
     alpha = CreateProduct(funzione[0]->NumInputs);
@@ -566,18 +562,21 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs) {
     	
     alpha[3] = '1';
     	
-    printf("alpha: %s\n\n", alpha);
+    #ifdef DEBUG_TEST
+        printf("\nalpha: %s\n\n", alpha);
+    #endif
     
-    // stampo i prodotti del'insieme S
-    printf("Products: ");
-    for (i = 0; i < funzione[0]->NumProducts; i++)
-    	printf("%s, ", funzione[0]->Products[i]);
-    printf("\n\n");
+    #ifdef DEBUG_TEST
+        printf("Products: ");
+        for (i = 0; i < funzione[0]->NumProducts; i++)
+            printf("%s, ", funzione[0]->Products[i]);
+        printf("\n\n");
+    #endif
     
     funzione[0]->NumCEXProducts = 0;
     funzione[0]->CEXLetterali = CreateProduct (funzione[0]->NumInputs);
 
-    for (i = 0; i < funzione[0]->NumInputs; i++){
+    for (i = 0; i < funzione[0]->NumInputs; i++) {
         funzione[0]->CEXLetterali[i] = '-';
     }
 
@@ -591,49 +590,72 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs) {
         RiempiMatrice (bm,XorInput);
         bm_sort_by_rows (bm);
         
-        printf ("la matrice prima della gauss elimination\n");
-        bm_print (bm); printf("\n");
+        #ifdef DEBUG_TEST
+            printf ("la matrice prima della gauss elimination\n");
+            bm_print (bm); printf("\n");
+        #endif
 
         bm_unique_row_echelon_form (bm);
             
-        printf ("la matrice dopo la gauss elimination\n");
-		bm_print (bm); printf("\n");
+        #ifdef DEBUG_TEST
+            printf ("la matrice dopo la gauss elimination\n");
+            bm_print (bm); printf("\n");
+        #endif
 		
 		if (bm->rows <= funzione[0]->NumInputs) {
             
         	CreaCEX(bm, funzione[0]);
                 
-            printf("NumCEXProducts: %d\n\n", funzione[0]->NumCEXProducts);
-                
-			printf("CEXProducts: ");
-            for (i = 0; i < funzione[0]->NumCEXProducts; i++)
-            	printf("%s, ", funzione[0]->CEXProducts[i]);
-            printf("\n\n");
-                	
-            printf("OutCEX: %s\n\n", funzione[0]->OutCEX);
-                
-            printf("variabiliNC: ");
-            for (i = 0; i < funzione[0]->NumCEXProducts; i++)
-             	printf ("%d, ", funzione[0]->variabiliNC[i]); 
-            printf("\n\n");
-                	
-            printf("CEXLetterali: %s\n\n", funzione[0]->CEXLetterali);
+            #ifdef DEBUG_TEST
+                printf("NumCEXProducts: %d\n\n", funzione[0]->NumCEXProducts);
+                    
+                printf("CEXProducts: ");
+                for (i = 0; i < funzione[0]->NumCEXProducts; i++)
+                    printf("%s, ", funzione[0]->CEXProducts[i]);
+                printf("\n\n");
+                        
+                printf("OutCEX: %s\n\n", funzione[0]->OutCEX);
+                    
+                printf("variabiliNC: ");
+                for (i = 0; i < funzione[0]->NumCEXProducts; i++)
+                    printf ("%d, ", funzione[0]->variabiliNC[i]); 
+                printf("\n\n");
+                        
+                printf("CEXLetterali: %s\n\n", funzione[0]->CEXLetterali);
+            #endif
             
-            DdNode** vars = calloc(funzione[0]->NumInputs, sizeof(DdNode*));
+            result = Cudd_ReadOne(manager); Cudd_Ref(result);
+            DdNode* tmp, *x, *sum; int j;
 
-			if (vars == NULL) {
-				perror("Chiamata a calloc: ");
-				return NULL;
-			}
+            for (i = 0; i < funzione[0]->NumCEXProducts; i++) {
 
-    		for (i = 0; i < funzione[0]->NumInputs; i++)
-		        vars[i] = Cudd_bddNewVar(manager);
-		        
-		     
-            free(vars);
+                sum = Cudd_ReadLogicZero(manager); Cudd_Ref(sum);
+
+                for (j = 0; j < funzione[0]->NumInputs; j++) {
+
+                    if (funzione[0]->CEXProducts[i][j] == '1') {
+
+                        if (b_alpha) x = Cudd_bddIthVar(manager, (2*j)+1);
+                        else x = Cudd_bddIthVar(manager, j);
+
+                        if (funzione[0]->variabiliNC[i] == j && funzione[0]->OutCEX[i] == '0')
+                            x = Cudd_Not(x);
+
+                        tmp = Cudd_bddXor(manager, sum, x);
+                        Cudd_Ref(tmp);
+                        Cudd_RecursiveDeref(manager, sum);
+                        sum = tmp;
+                    }
+                }
+
+                tmp = Cudd_bddAnd(manager, result, sum);
+                Cudd_Ref(tmp);
+                Cudd_RecursiveDeref(manager, result);
+                result = tmp;
+            }
     	}
     }
-    
+
     for (i = 0; i < funzione[0]->NumCEXProducts; i++)
     	DestroyProduct(&funzione[0]->CEXProducts[i]);
     
@@ -653,7 +675,7 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs) {
     free(XorInput); DestroySOP(funzione);
     free(funzione);
     
-    return NULL;
+    return result;
 }
 
 void quit()
