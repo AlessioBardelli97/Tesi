@@ -329,6 +329,7 @@ int bm_sort_by_rows (binmat *bm) {
   v = bm_get_row_values (bm);
   quicksort (v, 0, bm->rows - 1, 1);
   bm_set_row_values (bm, v);
+  free(v);
 
   return 0;
 }
@@ -341,6 +342,7 @@ int bm_sort_by_rows_desc (binmat *bm) {
 
   quicksort (v, 0, bm->rows - 1, 0);
   bm_set_row_values (bm, v);
+  free(v);
 
   return 0;
 }

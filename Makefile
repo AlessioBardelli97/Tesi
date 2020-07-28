@@ -2,7 +2,9 @@ TARGET = test2
 SRC    = $(TARGET).c
 BIN    = $(TARGET).out
 
-OBJ    = parser.o GaussJordan.o autosymmetry.o equations.o binmat.o logic.o 
+ARGS = input.pla
+
+OBJ    = parser.o autosymmetry.o equations.o binmat.o logic.o 
 
 ccflags = -O3 -std=c99 -Wall
 debug   = -g -DDEBUG
@@ -14,10 +16,13 @@ $(BIN):  $(SRC) $(OBJ)
 	gcc $(ccflags) $(debug) -c -o $@ $< 
 
 run: $(BIN)
-	./$(BIN) input.pla
+	./$(BIN) $(ARGS)
 	
-debug: $(BIN)
-	valgrind ./$(BIN) input.pla
+valgrind: $(BIN)
+	valgrind ./$(BIN) $(ARGS)
+	
+gdb: $(BIN)
+	gdb -q $(BIN)
 
 clean:
 	rm -f *.o

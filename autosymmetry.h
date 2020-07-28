@@ -1,10 +1,14 @@
 #ifndef _AUTOSYMMETRY_
 #define _AUTOSYMMETRY_
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <cudd.h>
+#include <unistd.h>
 
 #include "equations.h"
+#include "logic.h"
+#include "parser.h"
 
 DdManager* manager;
 
@@ -23,6 +27,8 @@ DdNode* buildLf(DdNode* g1, int inputs);
 DdNode* buildS(DdNode* u, DdNode* g1, int inputs);
 
 DdNode* extractVectorSpace(DdNode* S, DdNode* lf, int inputs);
+
+DdNode* buildMinimumVectorSpace(DdNode* S, int numInput);
 
 void quit();
 

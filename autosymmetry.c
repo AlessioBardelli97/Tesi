@@ -546,6 +546,116 @@ Eqns_t* reductionEquations(DdNode* h, int i, int inputs, EQ_manager *eq_man)
 	}
 }
 
+DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs) {
+
+	vProduct XorInput=NULL;
+	binmat *bm=NULL; MO_SOP funzione=NULL;
+    int i, uscite, numRi; Product alpha = NULL;
+    DdNode* result = NULL;
+    
+    // Stampo l'insieme S su un file .pla
+    printPla(manager, "S.pla", S, numInputs);
+    
+    // Carico la rappresentazione .pla di S,
+    // in una MO_SOP
+    LoadPLA ("S.pla", &funzione, &uscite);
+    
+    alpha = CreateProduct(funzione[0]->NumInputs);
+    for (i = 0; i < numInputs; i++)
+    	alpha[i] = '0';
+    	
+    alpha[3] = '1';
+    	
+    printf("alpha: %s\n\n", alpha);
+    
+    // stampo i prodotti del'insieme S
+    printf("Products: ");
+    for (i = 0; i < funzione[0]->NumProducts; i++)
+    	printf("%s, ", funzione[0]->Products[i]);
+    printf("\n\n");
+    
+    funzione[0]->NumCEXProducts = 0;
+    funzione[0]->CEXLetterali = CreateProduct (funzione[0]->NumInputs);
+
+    for (i = 0; i < funzione[0]->NumInputs; i++){
+        funzione[0]->CEXLetterali[i] = '-';
+    }
+
+	if (funzione[0]->NumProducts > 1) {
+	
+		setAlpha (funzione[0], alpha);
+        XorInput = XorConAlpha(funzione[0]);
+        numRi = funzione[0]->NumProducts + funzione[0]->NumInputs;
+        
+        bm = bm_new (numRi, funzione[0]->NumInputs);
+        RiempiMatrice (bm,XorInput);
+        bm_sort_by_rows (bm);
+        
+        printf ("la matrice prima della gauss elimination\n");
+        bm_print (bm); printf("\n");
+
+        bm_unique_row_echelon_form (bm);
+            
+        printf ("la matrice dopo la gauss elimination\n");
+		bm_print (bm); printf("\n");
+		
+		if (bm->rows <= funzione[0]->NumInputs) {
+            
+        	CreaCEX(bm, funzione[0]);
+                
+            printf("NumCEXProducts: %d\n\n", funzione[0]->NumCEXProducts);
+                
+			printf("CEXProducts: ");
+            for (i = 0; i < funzione[0]->NumCEXProducts; i++)
+            	printf("%s, ", funzione[0]->CEXProducts[i]);
+            printf("\n\n");
+                	
+            printf("OutCEX: %s\n\n", funzione[0]->OutCEX);
+                
+            printf("variabiliNC: ");
+            for (i = 0; i < funzione[0]->NumCEXProducts; i++)
+             	printf ("%d, ", funzione[0]->variabiliNC[i]); 
+            printf("\n\n");
+                	
+            printf("CEXLetterali: %s\n\n", funzione[0]->CEXLetterali);
+            
+            DdNode** vars = calloc(funzione[0]->NumInputs, sizeof(DdNode*));
+
+			if (vars == NULL) {
+				perror("Chiamata a calloc: ");
+				return NULL;
+			}
+
+    		for (i = 0; i < funzione[0]->NumInputs; i++)
+		        vars[i] = Cudd_bddNewVar(manager);
+		        
+		     
+            free(vars);
+    	}
+    }
+    
+    for (i = 0; i < funzione[0]->NumCEXProducts; i++)
+    	DestroyProduct(&funzione[0]->CEXProducts[i]);
+    
+    for (i = 0; i < funzione[0]->NumProducts; i++)
+    	DestroyProduct(&XorInput[i]);
+    
+    DestroyProduct(&alpha);
+    DestroyProduct(XorInput);
+    DestroyProduct (&funzione[0]->alpha);
+    DestroyProduct (&funzione[0]->CEXLetterali);
+    DestroyProduct (&funzione[0]->OutCEX);
+    
+    bm_free(bm);
+    unlink("S.pla");
+    free(funzione[0]->CEXProducts);
+    free(funzione[0]->variabiliNC);
+    free(XorInput); DestroySOP(funzione);
+    free(funzione);
+    
+    return NULL;
+}
+
 void quit()
 {
     Cudd_Quit(manager);
