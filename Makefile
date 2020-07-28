@@ -6,7 +6,7 @@ ARGS = input.pla
 
 OBJ    = parser.o autosymmetry.o equations.o binmat.o logic.o 
 
-ccflags = -O3 -std=c99 -Wall
+ccflags = -std=c99 -Wall
 debug   = -g -DDEBUG
 
 $(BIN):  $(SRC) $(OBJ)

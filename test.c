@@ -11,17 +11,17 @@
 
 int main(int argc, char** argv) {
 
-    init (); DdNode *u, *S;
+    init(); DdNode *u, *S;
 
-    boolean_function_t* f = parse_pla (manager, argv[1], 1);
+    boolean_function_t* f = parse_pla(manager, argv[1], 1);
 
-    u = Cudd_bddOr (manager, f->on_set[0], f->dc_set[0]);
-    Cudd_Ref (u);
+    u = Cudd_bddOr(manager, f->on_set[0], f->dc_set[0]);
+    Cudd_Ref(u);
     
-    S = buildS (u, f->on_set[0], f->inputs);
+    S = buildS(u, f->on_set[0], f->inputs);
     Cudd_RecursiveDeref(manager, u);
     
-    buildMinimumVectorSpace(u, f->inputs);
+    DdNode* MVS = buildMinimumVectorSpace(u, f->inputs, TRUE);
     
     free(f->on_set);
 	free(f->dc_set);

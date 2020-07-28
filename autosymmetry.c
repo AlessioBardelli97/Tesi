@@ -625,7 +625,7 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
             #endif
             
             result = Cudd_ReadOne(manager); Cudd_Ref(result);
-            DdNode* tmp, *x, *sum; int j;
+            DdNode* tmp, *x, *sum; int j, letterale;
 
             for (i = 0; i < funzione[0]->NumCEXProducts; i++) {
 
@@ -653,6 +653,27 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
                 Cudd_RecursiveDeref(manager, result);
                 result = tmp;
             }
+
+            for (i = 0; i < funzione[0]->NumInputs; i++) {
+				
+				letterale = funzione[0]->CEXLetterali[i];
+				
+				if (letterale == '0' || letterale == '1') {
+					if (b_alpha) x = Cudd_bddIthVar(manager, (2*i)+1);
+                    else x = Cudd_bddIthVar(manager, i);
+				}
+				
+				if (letterale == '0')
+					x = Cudd_Not(x);
+				
+				if (letterale == '0' || letterale == '1') {
+				
+					tmp = Cudd_bddAnd(manager, result, x);
+                    Cudd_Ref(tmp);
+	                Cudd_RecursiveDeref(manager, result);
+	                result = tmp;
+				}
+            }
     	}
     }
 
@@ -664,9 +685,9 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
     
     DestroyProduct(&alpha);
     DestroyProduct(XorInput);
-    DestroyProduct (&funzione[0]->alpha);
-    DestroyProduct (&funzione[0]->CEXLetterali);
-    DestroyProduct (&funzione[0]->OutCEX);
+    DestroyProduct(&funzione[0]->alpha);
+    DestroyProduct(&funzione[0]->CEXLetterali);
+    DestroyProduct(&funzione[0]->OutCEX);
     
     bm_free(bm);
     unlink("S.pla");
