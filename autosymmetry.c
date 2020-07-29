@@ -559,12 +559,8 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
     alpha = CreateProduct(funzione[0]->NumInputs);
     for (i = 0; i < numInputs; i++)
     	alpha[i] = '0';
-    	
-    alpha[3] = '1';
-    	
-    #ifdef DEBUG_TEST
-        printf("\nalpha: %s\n\n", alpha);
-    #endif
+    
+    dbg_printf("\nalpha: %s\n\n", alpha);
     
     #ifdef DEBUG_TEST
         printf("Products: ");
@@ -588,13 +584,13 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
         
         bm = bm_new (numRi, funzione[0]->NumInputs);
         RiempiMatrice (bm,XorInput);
-        bm_sort_by_rows (bm);
         
         #ifdef DEBUG_TEST
             printf ("la matrice prima della gauss elimination\n");
             bm_print (bm); printf("\n");
         #endif
 
+		bm_sort_by_rows (bm);
         bm_unique_row_echelon_form (bm);
             
         #ifdef DEBUG_TEST
@@ -626,6 +622,18 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
             
             result = Cudd_ReadOne(manager); Cudd_Ref(result);
             DdNode* tmp, *x, *sum; int j, letterale;
+            
+            /*for (i = 0; i < funzione[0]->NumInputs; i++) {
+            
+            	if (b_alpha) x = Cudd_bddIthVar(manager, 2*i);
+                else x = Cudd_bddIthVar(manager, i);
+            
+				DdNode* tmp2 = Cudd_bddOr(manager, x, Cudd_Not(x));
+        		Cudd_Ref(tmp2);
+		        Cudd_RecursiveDeref(manager, result);
+        		result = tmp; 
+            
+            }*/
 
             for (i = 0; i < funzione[0]->NumCEXProducts; i++) {
 
@@ -635,7 +643,7 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
 
                     if (funzione[0]->CEXProducts[i][j] == '1') {
 
-                        if (b_alpha) x = Cudd_bddIthVar(manager, (2*j)+1);
+                        if (b_alpha) x = Cudd_bddIthVar(manager, 2*j);
                         else x = Cudd_bddIthVar(manager, j);
 
                         if (funzione[0]->variabiliNC[i] == j && funzione[0]->OutCEX[i] == '0')
@@ -657,16 +665,17 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
             for (i = 0; i < funzione[0]->NumInputs; i++) {
 				
 				letterale = funzione[0]->CEXLetterali[i];
+				boolean flag = letterale == '0' || letterale == '1';
 				
-				if (letterale == '0' || letterale == '1') {
-					if (b_alpha) x = Cudd_bddIthVar(manager, (2*i)+1);
+				if (flag) {
+					if (b_alpha) x = Cudd_bddIthVar(manager, 2*i);
                     else x = Cudd_bddIthVar(manager, i);
 				}
 				
 				if (letterale == '0')
 					x = Cudd_Not(x);
 				
-				if (letterale == '0' || letterale == '1') {
+				if (flag) {
 				
 					tmp = Cudd_bddAnd(manager, result, x);
                     Cudd_Ref(tmp);

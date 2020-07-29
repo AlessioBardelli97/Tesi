@@ -1,8 +1,12 @@
 #ifndef _PLA_PARSER_
 #define _PLA_PARSER_
 
-#include <cudd.h>
+#include "debug.h"
+
+#include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
+#include <cudd.h>
 
 #define MAX_LINE_LENGTH 1024
 
@@ -19,5 +23,7 @@ boolean_function_t* parse_pla(DdManager* manager, char* file_path, int alfa);
 int** parse_equations(char* eq_path, int* rows, int* columns);
 
 void printPla(DdManager* manager, char* outputfile, DdNode* bdd, int n_var);
+
+void write_bdd(DdManager* m, DdNode* dd, char* filename);
 
 #endif

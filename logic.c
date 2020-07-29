@@ -7,27 +7,6 @@ char CharXOR (char v1, char v2)
   return ( (v1 == v2) ? '0' : '1' );
 }
 
-
-char CharNotXOR (char v1, char v2)
-{
-  return ( (v1 == v2) ? '1' : '0' );
-}
-
-
-char CharNOT (char v1)
-{
-  return ( (v1 == '1') ? '0' : '1' );
-}
-char CharNOTMod (char v1)
-{
-    if(v1=='0')
-        return '1';
-    else if(v1=='1')
-        return '0';
-    else if(v1=='-')
-        return '+';
-    else return v1;
-}
 char CharXORalpha (char v1, char v2)
 {
     if(v1==v2)
@@ -37,12 +16,6 @@ char CharXORalpha (char v1, char v2)
     else
         return '1';
 }
-
-char CharAND (char v1, char v2)
-{
-  return ( (v1 == '1') && (v2 == '1') ? '1' : '0' );
-}
-
 
 Product CreateProduct (int NumInputs)
 {
@@ -482,7 +455,6 @@ void SavePLA (MO_SOP OutSOP, int NumOutputs, char *OutputFile)
   fclose(fOutputFile);
 }
 
-/************************/
 void CreaCEX(binmat *bm, SOP *funzione)
 {
     int *canoniche,*ncanoniche;
@@ -573,7 +545,7 @@ void RiempiMatrice(binmat *bm, vProduct *prodotti) {
     char *bin;
     input=bm->cols;
     numProdotti=(bm->rows)-input;
-    verifica=(int*) calloc (input,sizeof(int));//controllo quali vettori ho gi\E0 inserito, 0 no, 1 si
+    verifica=(int*) calloc (input,sizeof(int));//controllo quali vettori ho gia' inserito, 0 no, 1 si
     bin=(char*) calloc (input+1,sizeof(char));
     for(j=0;j<numProdotti;j++) {
 		sum=0;

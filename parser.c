@@ -1,9 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "parser.h"
-#include "debug.h"
 
 static DdNode* parse_product(DdManager* manager ,char* input_line, int inputs, int alfa)
 {
@@ -265,3 +260,16 @@ void printPla(DdManager* manager, char* outputfile, DdNode* bdd, int n_var) {
 
 	fclose(f);
 }
+
+void write_bdd(DdManager* m, DdNode* dd, char* filename) {
+
+	dd = Cudd_BddToAdd(m, dd);
+
+	FILE* outfile = fopen(filename,"w");
+	DdNode** ddarray = malloc(sizeof(DdNode*));
+	ddarray[0] = dd;
+	Cudd_DumpDot(m, 1, ddarray, NULL, NULL, outfile);
+	free(ddarray);
+	fclose(outfile);
+}
+
