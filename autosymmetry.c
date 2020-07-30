@@ -621,21 +621,24 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
             #endif
             
             result = Cudd_ReadOne(manager); Cudd_Ref(result);
-            DdNode* tmp, *x, *sum; int j, letterale;
-            
-            /*for (i = 0; i < funzione[0]->NumInputs; i++) {
+            DdNode* tmp, *x, *sum, *tmp2; int j, letterale;
+
+            for (i = 0; i < funzione[0]->NumInputs; i++) {
             
             	if (b_alpha) x = Cudd_bddIthVar(manager, 2*i);
                 else x = Cudd_bddIthVar(manager, i);
-            
-				DdNode* tmp2 = Cudd_bddOr(manager, x, Cudd_Not(x));
-        		Cudd_Ref(tmp2);
-		        Cudd_RecursiveDeref(manager, result);
-        		result = tmp; 
-            
-            }*/
 
-            for (i = 0; i < funzione[0]->NumCEXProducts; i++) {
+                tmp2 = Cudd_bddOr(manager, x, Cudd_Not(x));
+                Cudd_Ref(tmp2); 
+                
+                tmp = Cudd_bddAnd(manager, result, tmp2);
+                Cudd_Ref(tmp);
+
+                Cudd_RecursiveDeref(result);
+                result = tmp;
+            }
+
+            /*for (i = 0; i < funzione[0]->NumCEXProducts; i++) {
 
                 sum = Cudd_ReadLogicZero(manager); Cudd_Ref(sum);
 
@@ -651,7 +654,7 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
 
                         tmp = Cudd_bddXor(manager, sum, x);
                         Cudd_Ref(tmp);
-                        Cudd_RecursiveDeref(manager, sum);
+                        Cudd_RecursiveDeref(manager, sum);           
                         sum = tmp;
                     }
                 }
@@ -682,7 +685,7 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
 	                Cudd_RecursiveDeref(manager, result);
 	                result = tmp;
 				}
-            }
+            }*/
     	}
     }
 
