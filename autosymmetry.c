@@ -1,9 +1,4 @@
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-
 #include "autosymmetry.h"
-#include "debug.h"
 
 static inline DdNode* difference(DdNode* a, DdNode* b) 
 {
@@ -633,9 +628,6 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
 
                     if (funzione[0]->CEXProducts[i][j] == '1') {
 
-                        /*if (b_alpha) x = Cudd_bddIthVar(manager, 2*j);
-                        else x = Cudd_bddIthVar(manager, j);*/
-                        
                         x = Cudd_bddIthVar(manager, j);
 
                         if (funzione[0]->variabiliNC[i] == j && funzione[0]->OutCEX[i] == '0')
@@ -659,12 +651,8 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
 				letterale = funzione[0]->CEXLetterali[i];
 				boolean flag = letterale == '0' || letterale == '1';
 				
-				if (flag) {
-					/*if (b_alpha) x = Cudd_bddIthVar(manager, 2*i);
-                    else x = Cudd_bddIthVar(manager, i);*/
-
-                    x = Cudd_bddIthVar(manager, i);
-                }
+				if (flag)
+					x = Cudd_bddIthVar(manager, i);
 				
 				if (letterale == '0')
 					x = Cudd_Not(x);
@@ -677,25 +665,6 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
 	                result = tmp;
 				}
             }
-            
-            /*sum = Cudd_ReadOne(manager); Cudd_Ref(sum);
-			
-			for (i = 0; i < numInputs; i++) {
-			
-				x = Cudd_bddIthVar(manager, i);
-					
-				tmp = Cudd_bddAnd(manager, sum, Cudd_Not(x));
-				Cudd_Ref(tmp);
-					
-				Cudd_RecursiveDeref(manager, sum);
-				sum = tmp;
-			}
-			
-			tmp = Cudd_bddOr(manager, result, sum);
-			Cudd_Ref(tmp);
-			
-			Cudd_RecursiveDeref(manager, result);
-			result = tmp;*/
 		}
     	
     	for (i = 0; i < funzione[0]->NumCEXProducts+1; i++) {
@@ -725,8 +694,14 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
     return result;
 }
 
+DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha) {
+
+    int dimS = log2();
+    
+    return NULL;
+}
+
 void quit()
 {
     Cudd_Quit(manager);
 }
-

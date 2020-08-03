@@ -3,9 +3,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <cudd.h>
+// #include <cudd.h>
 #include <unistd.h>
+#include <string.h>
+#include <math.h>
 
+#include "debug.h"
 #include "equations.h"
 #include "logic.h"
 #include "parser.h"
