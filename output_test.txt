@@ -1,48 +1,46 @@
-./test.out input.pla
+./test.out input1.pla && cat mvs.pla
 Linea letta: .i
-Numero di input della funzione: 6
+Numero di input della funzione: 5
 Linea letta: .o
 Numero di output della funzione: 1
-Linea letta: 001011
+Linea letta: 00010
 Output letto: 1
-Linea letta: 111011
-Output letto: *
-Linea letta: 110011
+Linea letta: 01000
 Output letto: 1
-Linea letta: 101011
-Output letto: *
-Linea letta: 100011
+Linea letta: 10010
 Output letto: 1
-Linea letta: 011011
-Output letto: *
-Linea letta: 010011
+Linea letta: 10110
+Output letto: 1
+Linea letta: 11000
 Output letto: 1
 
-alpha: 000000
+alpha: 00010
 
-Insieme S: Products: 000000, 011000, 1-1000, 
+Insieme S: Products: 00010, 01000, 10-10, 11000, 
 
 la matrice prima della gauss elimination
-0 0 0 0 0 0 
-0 1 1 0 0 0 
-0 1 0 0 0 0 
-1 0 1 0 0 0 
+0 0 0 0 0 
+0 1 0 1 0 
+0 0 1 0 0 
+1 0 0 0 0 
+1 1 0 1 0 
 
 la matrice dopo la gauss elimination
-1 0 0 0 0 0 
-0 1 0 0 0 0 
-0 0 1 0 0 0 
+1 0 0 0 0 
+0 1 0 1 0 
+0 0 1 0 0 
 
-NumCEXProducts: 0
+NumCEXProducts: 1
 
-CEXProducts: 
+CEXProducts: 01010, 
 
-OutCEX: 
+OutCEX: 1
 
-variabiliNC: 
+variabiliNC: 3, 
 
-CEXLetterali: ---000
+CEXLetterali: ----0
 
-.i 3
+.i 5
 .o 1
-000 1
+-0-10  1
+-1-00  1
