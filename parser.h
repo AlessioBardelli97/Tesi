@@ -24,6 +24,8 @@ int** parse_equations(char* eq_path, int* rows, int* columns);
 
 void printPla(DdManager* manager, char* outputfile, DdNode* bdd, int n_var);
 
-void write_bdd(DdManager* m, DdNode* dd, char* filename);
+void write_bdd_dot(DdManager* m, DdNode* dd, char* filename);
+
+void write_bdd_pla(DdManager* m, DdNode* dd, char* filename, int alpha);
 
 #endif

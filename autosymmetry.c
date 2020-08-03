@@ -559,11 +559,13 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
     alpha = CreateProduct(funzione[0]->NumInputs);
     for (i = 0; i < numInputs; i++)
     	alpha[i] = '0';
+    	
+    alpha[3] = '1';
     
     dbg_printf("\nalpha: %s\n\n", alpha);
     
     #if DEBUG_TEST
-        printf("Products: ");
+        printf("Insieme S: Products: ");
         for (i = 0; i < funzione[0]->NumProducts; i++)
             printf("%s, ", funzione[0]->Products[i]);
         printf("\n\n");
@@ -621,22 +623,7 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
             #endif
             
             result = Cudd_ReadOne(manager); Cudd_Ref(result);
-            DdNode* tmp, *x, *sum, *tmp2; int j, letterale;
-
-            for (i = 0; i < funzione[0]->NumInputs; i++) {
-            
-            	if (b_alpha) x = Cudd_bddIthVar(manager, 2*i);
-                else x = Cudd_bddIthVar(manager, i);
-
-                tmp2 = Cudd_bddXor(manager, x, Cudd_Not(x));
-                Cudd_Ref(tmp2);
-                
-                tmp = Cudd_bddAnd(manager, result, tmp2);
-                Cudd_Ref(tmp);
-
-                Cudd_RecursiveDeref(manager, result);
-                result = tmp;
-            }
+            DdNode* tmp, *x, *sum; int j, letterale;
             
             for (i = 0; i < funzione[0]->NumCEXProducts; i++) {
 
@@ -646,8 +633,10 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
 
                     if (funzione[0]->CEXProducts[i][j] == '1') {
 
-                        if (b_alpha) x = Cudd_bddIthVar(manager, 2*j);
-                        else x = Cudd_bddIthVar(manager, j);
+                        /*if (b_alpha) x = Cudd_bddIthVar(manager, 2*j);
+                        else x = Cudd_bddIthVar(manager, j);*/
+                        
+                        x = Cudd_bddIthVar(manager, j);
 
                         if (funzione[0]->variabiliNC[i] == j && funzione[0]->OutCEX[i] == '0')
                             x = Cudd_Not(x);
@@ -671,9 +660,11 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
 				boolean flag = letterale == '0' || letterale == '1';
 				
 				if (flag) {
-					if (b_alpha) x = Cudd_bddIthVar(manager, 2*i);
-                    else x = Cudd_bddIthVar(manager, i);
-				}
+					/*if (b_alpha) x = Cudd_bddIthVar(manager, 2*i);
+                    else x = Cudd_bddIthVar(manager, i);*/
+
+                    x = Cudd_bddIthVar(manager, i);
+                }
 				
 				if (letterale == '0')
 					x = Cudd_Not(x);
@@ -686,9 +677,28 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
 	                result = tmp;
 				}
             }
-    	}
+            
+            /*sum = Cudd_ReadOne(manager); Cudd_Ref(sum);
+			
+			for (i = 0; i < numInputs; i++) {
+			
+				x = Cudd_bddIthVar(manager, i);
+					
+				tmp = Cudd_bddAnd(manager, sum, Cudd_Not(x));
+				Cudd_Ref(tmp);
+					
+				Cudd_RecursiveDeref(manager, sum);
+				sum = tmp;
+			}
+			
+			tmp = Cudd_bddOr(manager, result, sum);
+			Cudd_Ref(tmp);
+			
+			Cudd_RecursiveDeref(manager, result);
+			result = tmp;*/
+		}
     	
-    	for (i = 0; i < funzione[0]->NumCEXProducts+3; i++) {
+    	for (i = 0; i < funzione[0]->NumCEXProducts+1; i++) {
     		DestroyProduct(&funzione[0]->CEXProducts[i]);
     	}
     

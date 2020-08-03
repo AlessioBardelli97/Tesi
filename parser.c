@@ -261,7 +261,7 @@ void printPla(DdManager* manager, char* outputfile, DdNode* bdd, int n_var) {
 	fclose(f);
 }
 
-void write_bdd(DdManager* m, DdNode* dd, char* filename) {
+void write_bdd_dot(DdManager* m, DdNode* dd, char* filename) {
 
 	dd = Cudd_BddToAdd(m, dd);
 
@@ -273,3 +273,43 @@ void write_bdd(DdManager* m, DdNode* dd, char* filename) {
 	fclose(outfile);
 }
 
+void write_bdd_pla(DdManager* m, DdNode* dd, char* filename, int alpha) {
+
+	int input, i; char tmp[1024];
+	
+	// redirezione dello standard 
+	// output su filename...
+	FILE* outfile = freopen(filename, "w+", stdout);
+	
+	Cudd_PrintMinterm(m, dd);
+	rewind(outfile);
+	fscanf(outfile, "%s", tmp);
+	
+	input = alpha ? strlen(tmp)/2 : strlen(tmp);
+	rewind(outfile);
+	
+	fprintf(outfile, ".i %d\n.o 1\n", input);
+	Cudd_PrintMinterm(m, dd);
+	
+	// ripristino dello standard output...
+	fclose(outfile);
+	freopen("/dev/tty", "w", stdout);
+	
+	if (alpha) {
+	
+		outfile = fopen(filename, "r+");
+	
+		fgets(tmp, 1024, outfile);
+		fgets(tmp, 1024, outfile);
+		
+		for (i = 0; i < input; i++) {
+			fgetc(outfile);
+		}
+		
+		for (i = 0; i < input; i++) {
+			fputc(127, outfile);
+		}
+	}
+	
+	fclose(outfile);
+}

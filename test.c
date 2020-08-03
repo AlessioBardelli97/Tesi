@@ -5,29 +5,28 @@
 
 int main(int argc, char** argv) {
 
-    init(); DdNode *u, *S;
+    init(); /*DdNode *u, *S;*/
 
-    boolean_function_t* f = parse_pla(manager, argv[1], TRUE);
+    boolean_function_t* f = parse_pla(manager, argv[1], FALSE);
     
-    u = Cudd_bddOr(manager, f->on_set[0], f->dc_set[0]);
-    Cudd_Ref(u);
-    
-    S = buildS(u, f->on_set[0], f->inputs);
-    Cudd_RecursiveDeref(manager, u);
+    /*u = Cudd_bddOr(manager, f->on_set[0], f->dc_set[0]);
+    Cudd_Ref(u);*/
 
-    /*write_bdd(manager, S, "s.dot");
-    printPla(manager, "s.pla", S, 2*f->inputs);*/
-    
-    DdNode* MVS = buildMinimumVectorSpace(S, f->inputs, TRUE);
-    
+    /*S = buildS(u, f->on_set[0], f->inputs);
+    Cudd_RecursiveDeref(manager, u);*/
+
+	// DdNode* MVS = buildMinimumVectorSpace(S, f->inputs, TRUE);
+
+	DdNode* MVS = buildMinimumVectorSpace(f->on_set[0], f->inputs, FALSE);
+
     if (MVS) {
-    	write_bdd(manager, MVS, "mvs.dot");
-	    printPla(manager, "mvs.pla", MVS, 2*f->inputs);
+    	write_bdd_dot(manager, MVS, "mvs.dot");
+	    write_bdd_pla(manager, MVS, "mvs.pla", FALSE);
 	}
-    
+
     free(f->on_set);
 	free(f->dc_set);
 	free(f); quit();
-	
+
     return 0;
 }
