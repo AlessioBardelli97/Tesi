@@ -16,10 +16,10 @@ $(BIN):  $(SRC) $(OBJ)
 	gcc $(ccflags) $(debug) -c -o $@ $<
 
 run: $(BIN)
-	./$(BIN) $(ARGS) && cat mvs.pla
+	./$(BIN) $(ARGS)
 	
 valgrind: $(BIN)
-	valgrind ./$(BIN) $(ARGS) && cat mvs.pla
+	valgrind ./$(BIN) $(ARGS)
 	
 gdb: $(BIN)
 	gdb -q $(BIN)

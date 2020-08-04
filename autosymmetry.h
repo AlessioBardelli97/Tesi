@@ -33,6 +33,8 @@ DdNode* extractVectorSpace(DdNode* S, DdNode* lf, int inputs);
 
 DdNode* buildMinimumVectorSpace(DdNode* S, int numInput, boolean b_alpha);
 
+DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha);
+
 void quit();
 
 #endif

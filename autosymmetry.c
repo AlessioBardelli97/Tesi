@@ -562,7 +562,7 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
     #if DEBUG_TEST
         printf("Insieme S: Products: ");
         for (i = 0; i < funzione[0]->NumProducts; i++)
-            printf("%s, ", funzione[0]->Products[i]);
+            printf("%s ", funzione[0]->Products[i]);
         printf("\n\n");
     #endif
     
@@ -696,9 +696,68 @@ DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
 
 DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha) {
 
-    int dimS = log2();
+	vProduct XorInput=NULL;
+	binmat *bm=NULL; MO_SOP funzione=NULL;
+    int i, uscite, numRi; Product alpha = NULL;
+    DdNode* result = NULL;
+	
+	double num_points = Cudd_CountMinterm(manager, S, b_alpha ? 2*inputs : inputs);
+	dbg_printf("\nNumero di punti di S: %d\n", (int)num_points);
+
+    int dimS = (int)log2(num_points);
+    dbg_printf("\ndimS: %d\n", dimS);
     
-    return NULL;
+    printPla (manager, "S.pla", S, b_alpha ? 2*inputs : inputs);
+    LoadPLA ("S.pla", &funzione, &uscite);
+    
+    alpha = CreateProduct(inputs);
+    for (i = 0; i < inputs; i++)
+    	alpha[i] = '0';
+    	
+    alpha[3] = '1';
+    
+    dbg_printf("\nalpha: %s\n", alpha);
+    
+    #if DEBUG_TEST
+        printf("\nInsieme S: Products: ");
+        for (i = 0; i < funzione[0]->NumProducts; i++)
+            printf("%s ", funzione[0]->Products[i]);
+        printf("\n");
+    #endif
+    
+    if (funzione[0]->NumProducts > 1) {
+    
+    	funzione[0]->NumCEXProducts = 0;
+	    funzione[0]->CEXLetterali = CreateProduct (inputs);
+
+	    for (i = 0; i < inputs; i++) {
+    	    funzione[0]->CEXLetterali[i] = '-';
+	    }
+	
+		setAlpha (funzione[0], alpha);
+        XorInput = XorConAlpha(funzione[0]);
+        numRi = funzione[0]->NumProducts + inputs;
+        
+        bm = bm_new (numRi, inputs);
+        RiempiMatrice (bm, XorInput);
+        
+        #if DEBUG_TEST
+            printf ("\nLa matrice prima della gauss elimination\n");
+            bm_print (bm);
+        #endif
+
+		bm_sort_by_rows (bm);
+        bm_unique_row_echelon_form (bm);
+            
+        #if DEBUG_TEST
+            printf ("\nLa matrice dopo la gauss elimination\n");
+            bm_print (bm);
+        #endif
+        
+        
+    }
+    
+    return result;
 }
 
 void quit()

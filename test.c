@@ -17,12 +17,14 @@ int main(int argc, char** argv) {
 
 	// DdNode* MVS = buildMinimumVectorSpace(S, f->inputs, TRUE);
 
-	DdNode* MVS = buildMinimumVectorSpace(f->on_set[0], f->inputs, FALSE);
+	/*DdNode* MVS = buildMinimumVectorSpace(f->on_set[0], f->inputs, FALSE);
 
     if (MVS) {
     	write_bdd_dot(manager, MVS, "mvs.dot");
 	    write_bdd_pla(manager, MVS, "mvs.pla", FALSE);
-	}
+	}*/
+	
+	buildMaximumVectorSpace(f->on_set[0], f->inputs, FALSE);
 
     free(f->on_set);
 	free(f->dc_set);
