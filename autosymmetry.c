@@ -1,3 +1,4 @@
+#include "generaSottoinsiemi.c"
 #include "autosymmetry.h"
 
 static inline DdNode* difference(DdNode* a, DdNode* b) 
@@ -706,6 +707,11 @@ DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha) {
 
     int dimS = (int)log2(num_points);
     dbg_printf("\ndimS: %d\n", dimS);
+
+    // Inizialmente la dimensione del più 
+    // grande spazio vettoriale che contiene 
+    // S è pari alla dimensione di S.
+    int dimMVS = dimS;
     
     printPla (manager, "S.pla", S, b_alpha ? 2*inputs : inputs);
     LoadPLA ("S.pla", &funzione, &uscite);
@@ -753,10 +759,22 @@ DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha) {
             printf ("\nLa matrice dopo la gauss elimination\n");
             bm_print (bm);
         #endif
+
+        dbg_printf("\nNumero di vettori linearmente indipendenti di S: %d\n", bm->rows);
+
+        int* b = calloc(bm->rows, sizeof(int));
         
-        
+        while (dimMVS >= 0) {
+
+            generabk(b, bm->rows, 0, dimMVS);
+
+            // ...
+
+            dimMVS--;
+        }
     }
     
+    unlink("S.pla");
     return result;
 }
 

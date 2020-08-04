@@ -24,16 +24,3 @@ void generabk(int* b, int n, int i, int k) {
 		b[i] = 0;
 	}
 }
-
-int main() {
-  
-	int b[3] = {0,0,0}, i;
-
-	for (i=0;i<=3;i++) {
-		printf("k=%d\n", i);
-		generabk(b,3,0,i);
-		printf("\n");
-	}
-
-	return 0;
-}
