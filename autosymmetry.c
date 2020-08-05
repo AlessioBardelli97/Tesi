@@ -1,5 +1,55 @@
-#include "generaSottoinsiemi.c"
 #include "autosymmetry.h"
+
+// ****************************************************************************************************************************
+
+/* 
+ * arr[]  ---> Input Array 
+ * n      ---> Size of input array 
+ * r      ---> Size of a combination to be printed 
+ * index  ---> Current index in data[] 
+ * data[] ---> Temporary array to store current combination 
+ * i      ---> index of current element in arr[]
+ */
+static void combination(int arr[], int n, int r, int index, int data[], int i) {
+
+    // Current cobination is ready, print it 
+    if (index == r) {
+
+    	binmat* bm = bm_new(r, 5);
+    	bm_set_row_values(bm, data);
+    	printf("\n");
+    	bm_print(bm);
+    	bm_free(bm);
+        return; 
+    }
+  
+    // When no more elements are there to put in data[] 
+    if (i >= n)
+        return;
+  
+    // current is included, put next at next location
+    data[index] = arr[i];
+    combination(arr, n, r, index+1, data, i+1);
+  
+    // current is excluded, replace it with next (Note that 
+    // i+1 is passed, but index is not changed) 
+    combination(arr, n, r, index, data, i+1); 
+}
+
+// The main function that prints all combinations of size r 
+// in arr[] of size n. This function mainly uses combinationUtil() 
+static void Combination(int arr[], int n, int r) {
+    
+    // A temporary array to store all combination one by one 
+    int* data = calloc(r, sizeof(int)); 
+  
+    // Print all combination using temprary array 'data[]' 
+    combination(arr, n, r, 0, data, 0);
+    
+    free(data); 
+} 
+
+// ****************************************************************************************************************************
 
 static inline DdNode* difference(DdNode* a, DdNode* b) 
 {
@@ -701,10 +751,12 @@ DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha) {
 	binmat *bm=NULL; MO_SOP funzione=NULL;
     int i, uscite, numRi; Product alpha = NULL;
     DdNode* result = NULL;
-	
+
+	// Calcolo il numeor di punti dell'insieme S.	
 	double num_points = Cudd_CountMinterm(manager, S, b_alpha ? 2*inputs : inputs);
 	dbg_printf("\nNumero di punti di S: %d\n", (int)num_points);
 
+	// Calcolo la dimensione dell'insieme S.
     int dimS = (int)log2(num_points);
     dbg_printf("\ndimS: %d\n", dimS);
 
@@ -722,14 +774,14 @@ DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha) {
     	
     alpha[3] = '1';
     
-    dbg_printf("\nalpha: %s\n", alpha);
-    
     #if DEBUG_TEST
-        printf("\nInsieme S: Products: ");
+        printf("\nPunti dell'insieme S: ");
         for (i = 0; i < funzione[0]->NumProducts; i++)
             printf("%s ", funzione[0]->Products[i]);
         printf("\n");
     #endif
+    
+    dbg_printf("\nalpha: %s\n", alpha);
     
     if (funzione[0]->NumProducts > 1) {
     
@@ -744,6 +796,10 @@ DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha) {
         XorInput = XorConAlpha(funzione[0]);
         numRi = funzione[0]->NumProducts + inputs;
         
+        // Riempo la matrice, inserendo per righe i vettori 
+        // dell'insieme S. Se ho un don't care in posizione i 
+        // sul vettore j, inserisco alla riga j della matrice 
+        // l'i-esimo vettore canonico.
         bm = bm_new (numRi, inputs);
         RiempiMatrice (bm, XorInput);
         
@@ -753,28 +809,45 @@ DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha) {
         #endif
 
 		bm_sort_by_rows (bm);
-        bm_unique_row_echelon_form (bm);
-            
-        #if DEBUG_TEST
+		bm_unique_row_echelon_form (bm);
+		
+		#if DEBUG_TEST
             printf ("\nLa matrice dopo la gauss elimination\n");
             bm_print (bm);
         #endif
-
-        dbg_printf("\nNumero di vettori linearmente indipendenti di S: %d\n", bm->rows);
-
-        int* b = calloc(bm->rows, sizeof(int));
         
-        while (dimMVS >= 0) {
+        dbg_printf("\nNumero di vettori linearmente indipendenti di S: %ld\n", bm->rows);
 
-            generabk(b, bm->rows, 0, dimMVS);
+        int* rows = bm_get_row_values(bm);
+        
+        while (dimMVS >= 2) {
+
+			dbg_printf("\nPossibili scelte di %d vettori linearmente indipendenti da S:\n", dimS);
+            Combination(rows, bm->rows, dimMVS);
 
             // ...
 
             dimMVS--;
         }
+        
+        for (i = 0; i < funzione[0]->NumProducts; i++) {
+    		DestroyProduct(&XorInput[i]);
+    	}
+    
+		DestroyProduct(XorInput);
+		DestroyProduct(&funzione[0]->alpha);
+		DestroyProduct(&funzione[0]->CEXLetterali);
+    
+		bm_free(bm);
+		free(XorInput);
+		free(rows);
     }
     
-    unlink("S.pla");
+	unlink("S.pla");
+    DestroyProduct(&alpha);
+    DestroySOP(funzione);
+    free(funzione);
+
     return result;
 }
 

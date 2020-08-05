@@ -19,7 +19,7 @@ run: $(BIN)
 	./$(BIN) $(ARGS)
 	
 valgrind: $(BIN)
-	valgrind ./$(BIN) $(ARGS)
+	valgrind -s ./$(BIN) $(ARGS)
 	
 gdb: $(BIN)
 	gdb -q $(BIN)

@@ -451,14 +451,14 @@ int bm_get_canonical_and_noncanonical_columns (binmat *bm, int** canonical, int*
   if (!*canonical) return -1;
 
   *noncanonical = malloc (sizeof (int) * (bm->cols - (*m)));
-  if (!*noncanonical) {
+  if (!(*noncanonical)) {
     free (*canonical);
     return -1;
   }
 
   for (i = 0; i < (*m); i++) (*canonical)[i] = -1;
   for (i = 0; i < (bm->cols - (*m)); i++) (*noncanonical)[i] = -1;
-
+  
   a = 0;
   for (i = 0; i < bm->cols; i++) {
     k = is_canonical (bm_get_col_value (bm, i), bm->rows);
@@ -466,7 +466,7 @@ int bm_get_canonical_and_noncanonical_columns (binmat *bm, int** canonical, int*
     if (k != -1 && (*canonical)[k] == -1) {
       (*canonical)[k] = i;
     } else {
-      (*noncanonical)[a++] = i;
+	  (*noncanonical)[a++] = i;
     }
   }
 
