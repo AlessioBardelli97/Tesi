@@ -2,6 +2,102 @@
 
 // ****************************************************************************************************************************
 
+static DdNode* buildMinimumVectorSpace(binmat* bm, SOP* funzione, boolean b_alpha) {
+
+	DdNode* result=NULL; int i;
+
+	funzione->NumCEXProducts = 0;
+    funzione->CEXLetterali = CreateProduct (bm->cols);
+
+    for (i=0;i<bm->cols;i++) {
+	    funzione->CEXLetterali[i] = '-';
+    }
+
+	if (bm->rows <= funzione->NumInputs) {
+            
+    	CreaCEX(bm, funzione);
+            
+        #if DEBUG_TEST
+            printf("\nNumCEXProducts: %d\n", funzione->NumCEXProducts);
+                
+            printf("\nCEXProducts: ");
+            for (i = 0; i < funzione->NumCEXProducts; i++)
+                printf("%s, ", funzione->CEXProducts[i]);
+            printf("\n");
+                    
+            printf("\nOutCEX: %s\n", funzione->OutCEX);
+                
+            printf("\nvariabiliNC: ");
+            for (i = 0; i < funzione->NumCEXProducts; i++)
+                printf ("%d, ", funzione->variabiliNC[i]); 
+            printf("\n");
+                    
+            printf("\nCEXLetterali: %s\n", funzione->CEXLetterali);
+        #endif
+        
+        result = Cudd_ReadOne(manager); Cudd_Ref(result);
+        DdNode* tmp, *x, *sum; int j, letterale;
+        
+        for (i = 0; i < funzione->NumCEXProducts; i++) {
+
+            sum = Cudd_ReadLogicZero(manager); Cudd_Ref(sum);
+
+            for (j = 0; j < funzione->NumInputs; j++) {
+
+                if (funzione->CEXProducts[i][j] == '1') {
+
+                    x = Cudd_bddIthVar(manager, b_alpha ? 2*j : j);
+
+                    if (funzione->variabiliNC[i] == j && funzione->OutCEX[i] == '0')
+                        x = Cudd_Not(x);
+
+                    tmp = Cudd_bddXor(manager, sum, x);
+                    Cudd_Ref(tmp);
+                    Cudd_RecursiveDeref(manager, sum);           
+                    sum = tmp;
+                }
+            }
+
+            tmp = Cudd_bddAnd(manager, result, sum);
+            Cudd_Ref(tmp);
+            Cudd_RecursiveDeref(manager, result);
+            result = tmp;
+        }
+
+        for (i = 0; i < funzione->NumInputs; i++) {
+			
+			letterale = funzione->CEXLetterali[i];
+			boolean flag = letterale == '0' || letterale == '1';
+			
+			if (flag)
+				x = Cudd_bddIthVar(manager, b_alpha ? 2*i : i);
+			
+			if (letterale == '0')
+				x = Cudd_Not(x);
+			
+			if (flag) {
+			
+				tmp = Cudd_bddAnd(manager, result, x);
+                Cudd_Ref(tmp);
+                Cudd_RecursiveDeref(manager, result);
+                result = tmp;
+			}
+        }
+	}
+    
+    for (i = 0; i < funzione->NumCEXProducts; i++) {
+    	DestroyProduct(&funzione->CEXProducts[i]);
+    }
+    
+    DestroyProduct(&funzione->CEXLetterali);
+	DestroyProduct(&funzione->OutCEX);
+	
+	free(funzione->CEXProducts);
+	free(funzione->variabiliNC);
+    
+    return result;
+}
+
 /* 
  * arr[]  ---> Input Array 
  * n      ---> Size of input array 
@@ -10,43 +106,67 @@
  * data[] ---> Temporary array to store current combination 
  * i      ---> index of current element in arr[]
  */
-static void combination(int arr[], int n, int r, int index, int data[], int i) {
+static DdNode* combination(int arr[], int n, int r, int index, int data[], int i, SOP* funzione, DdNode* S, boolean b_alpha) {
 
     // Current cobination is ready, print it 
     if (index == r) {
 
-    	binmat* bm = bm_new(r, 5);
+    	binmat* bm = bm_new(r, funzione->NumInputs);
     	bm_set_row_values(bm, data);
-    	printf("\n");
-    	bm_print(bm);
+
+		#if DEBUG_TEST
+			printf("\n****************************************************************\n");
+		#endif
+		
+		dbg_printf("Possibile scelta di %d vettori linearmente indipendenti da S:\n", r);
+            
+    	#if DEBUG_TEST
+	    	bm_print(bm);
+	    #endif
+    	
+    	DdNode* VS = buildMinimumVectorSpace(bm, funzione, b_alpha);
     	bm_free(bm);
-        return; 
+    	
+		if (Cudd_bddLeq(manager, VS, S)) {
+			printf("\nE' contenuto in S, abbiamo finito.\n");
+			return VS;
+		} else {
+			printf("\nNon e' contenuto.\n");
+			return NULL;
+		}
+		
+		#if DEBUG_TEST
+			printf("\n****************************************************************\n");
+		#endif
     }
   
     // When no more elements are there to put in data[] 
     if (i >= n)
-        return;
+        return NULL;
   
     // current is included, put next at next location
     data[index] = arr[i];
-    combination(arr, n, r, index+1, data, i+1);
+    DdNode* result = combination(arr, n, r, index+1, data, i+1, funzione, S, b_alpha);
+    if (result)
+    	return result;
   
     // current is excluded, replace it with next (Note that 
     // i+1 is passed, but index is not changed) 
-    combination(arr, n, r, index, data, i+1); 
+    return combination(arr, n, r, index, data, i+1, funzione, S, b_alpha);
 }
 
 // The main function that prints all combinations of size r 
 // in arr[] of size n. This function mainly uses combinationUtil() 
-static void Combination(int arr[], int n, int r) {
+static DdNode* Combination(int arr[], int n, int r, SOP* funzione, DdNode* S, boolean b_alpha) {
     
     // A temporary array to store all combination one by one 
     int* data = calloc(r, sizeof(int)); 
   
     // Print all combination using temprary array 'data[]' 
-    combination(arr, n, r, 0, data, 0);
+    DdNode* result = combination(arr, n, r, 0, data, 0, funzione, S, b_alpha);
     
     free(data); 
+    return result;
 } 
 
 // ****************************************************************************************************************************
@@ -592,176 +712,23 @@ Eqns_t* reductionEquations(DdNode* h, int i, int inputs, EQ_manager *eq_man)
 	}
 }
 
-DdNode* buildMinimumVectorSpace(DdNode* S, int numInputs, boolean b_alpha) {
-
-	vProduct XorInput=NULL;
-	binmat *bm=NULL; MO_SOP funzione=NULL;
-    int i, uscite, numRi; Product alpha = NULL;
-    DdNode* result = NULL;
-    
-    printPla (manager, "S.pla", S, b_alpha ? 2*numInputs : numInputs);
-    LoadPLA ("S.pla", &funzione, &uscite);
-    
-    alpha = CreateProduct(funzione[0]->NumInputs);
-    for (i = 0; i < numInputs; i++)
-    	alpha[i] = '0';
-    	
-    alpha[3] = '1';
-    
-    dbg_printf("\nalpha: %s\n\n", alpha);
-    
-    #if DEBUG_TEST
-        printf("Insieme S: Products: ");
-        for (i = 0; i < funzione[0]->NumProducts; i++)
-            printf("%s ", funzione[0]->Products[i]);
-        printf("\n\n");
-    #endif
-    
-    if (funzione[0]->NumProducts > 1) {
-    
-    	funzione[0]->NumCEXProducts = 0;
-	    funzione[0]->CEXLetterali = CreateProduct (funzione[0]->NumInputs);
-
-	    for (i = 0; i < funzione[0]->NumInputs; i++) {
-    	    funzione[0]->CEXLetterali[i] = '-';
-	    }
-	
-		setAlpha (funzione[0], alpha);
-        XorInput = XorConAlpha(funzione[0]);
-        numRi = funzione[0]->NumProducts + funzione[0]->NumInputs;
-        
-        bm = bm_new (numRi, funzione[0]->NumInputs);
-        RiempiMatrice (bm,XorInput);
-        
-        #if DEBUG_TEST
-            printf ("la matrice prima della gauss elimination\n");
-            bm_print (bm); printf("\n");
-        #endif
-
-		bm_sort_by_rows (bm);
-        bm_unique_row_echelon_form (bm);
-            
-        #if DEBUG_TEST
-            printf ("la matrice dopo la gauss elimination\n");
-            bm_print (bm); printf("\n");
-        #endif
-		
-		if (bm->rows <= funzione[0]->NumInputs) {
-            
-        	CreaCEX(bm, funzione[0]);
-                
-            #if DEBUG_TEST
-                printf("NumCEXProducts: %d\n\n", funzione[0]->NumCEXProducts);
-                    
-                printf("CEXProducts: ");
-                for (i = 0; i < funzione[0]->NumCEXProducts; i++)
-                    printf("%s, ", funzione[0]->CEXProducts[i]);
-                printf("\n\n");
-                        
-                printf("OutCEX: %s\n\n", funzione[0]->OutCEX);
-                    
-                printf("variabiliNC: ");
-                for (i = 0; i < funzione[0]->NumCEXProducts; i++)
-                    printf ("%d, ", funzione[0]->variabiliNC[i]); 
-                printf("\n\n");
-                        
-                printf("CEXLetterali: %s\n\n", funzione[0]->CEXLetterali);
-            #endif
-            
-            result = Cudd_ReadOne(manager); Cudd_Ref(result);
-            DdNode* tmp, *x, *sum; int j, letterale;
-            
-            for (i = 0; i < funzione[0]->NumCEXProducts; i++) {
-
-                sum = Cudd_ReadLogicZero(manager); Cudd_Ref(sum);
-
-                for (j = 0; j < funzione[0]->NumInputs; j++) {
-
-                    if (funzione[0]->CEXProducts[i][j] == '1') {
-
-                        x = Cudd_bddIthVar(manager, j);
-
-                        if (funzione[0]->variabiliNC[i] == j && funzione[0]->OutCEX[i] == '0')
-                            x = Cudd_Not(x);
-
-                        tmp = Cudd_bddXor(manager, sum, x);
-                        Cudd_Ref(tmp);
-                        Cudd_RecursiveDeref(manager, sum);           
-                        sum = tmp;
-                    }
-                }
-
-                tmp = Cudd_bddAnd(manager, result, sum);
-                Cudd_Ref(tmp);
-                Cudd_RecursiveDeref(manager, result);
-                result = tmp;
-            }
-
-            for (i = 0; i < funzione[0]->NumInputs; i++) {
-				
-				letterale = funzione[0]->CEXLetterali[i];
-				boolean flag = letterale == '0' || letterale == '1';
-				
-				if (flag)
-					x = Cudd_bddIthVar(manager, i);
-				
-				if (letterale == '0')
-					x = Cudd_Not(x);
-				
-				if (flag) {
-				
-					tmp = Cudd_bddAnd(manager, result, x);
-                    Cudd_Ref(tmp);
-	                Cudd_RecursiveDeref(manager, result);
-	                result = tmp;
-				}
-            }
-		}
-    	
-    	for (i = 0; i < funzione[0]->NumCEXProducts+1; i++) {
-    		DestroyProduct(&funzione[0]->CEXProducts[i]);
-    	}
-    
-	    for (i = 0; i < funzione[0]->NumProducts; i++) {
-    		DestroyProduct(&XorInput[i]);
-    	}
-    
-		DestroyProduct(XorInput);
-		DestroyProduct(&funzione[0]->alpha);
-		DestroyProduct(&funzione[0]->CEXLetterali);
-		DestroyProduct(&funzione[0]->OutCEX);
-    
-		bm_free(bm);
-		free(funzione[0]->CEXProducts);
-		free(funzione[0]->variabiliNC);
-		free(XorInput);
-    }
-    
-    unlink("S.pla");
-    DestroyProduct(&alpha);
-    DestroySOP(funzione);
-    free(funzione);
-    
-    return result;
-}
-
 DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha) {
 
 	vProduct XorInput=NULL;
 	binmat *bm=NULL; MO_SOP funzione=NULL;
     int i, uscite, numRi; Product alpha = NULL;
     DdNode* result = NULL;
-
-	// Calcolo il numeor di punti dell'insieme S.	
-	double num_points = Cudd_CountMinterm(manager, S, b_alpha ? 2*inputs : inputs);
+    
+    // Calcolo il numero di punti dell'insieme S.
+	double num_points = Cudd_CountMinterm(manager, S, inputs);
 	dbg_printf("\nNumero di punti di S: %d\n", (int)num_points);
 
 	// Calcolo la dimensione dell'insieme S.
     int dimS = (int)log2(num_points);
     dbg_printf("\ndimS: %d\n", dimS);
 
-    // Inizialmente la dimensione del più 
-    // grande spazio vettoriale che contiene 
+    // Inizialmente la dimensione del più
+    // grande spazio vettoriale che contiene
     // S è pari alla dimensione di S.
     int dimMVS = dimS;
     
@@ -769,10 +736,8 @@ DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha) {
     LoadPLA ("S.pla", &funzione, &uscite);
     
     alpha = CreateProduct(inputs);
-    for (i = 0; i < inputs; i++)
+    for (i = 0; i<inputs; i++)
     	alpha[i] = '0';
-    	
-    alpha[3] = '1';
     
     #if DEBUG_TEST
         printf("\nPunti dell'insieme S: ");
@@ -785,30 +750,25 @@ DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha) {
     
     if (funzione[0]->NumProducts > 1) {
     
-    	funzione[0]->NumCEXProducts = 0;
-	    funzione[0]->CEXLetterali = CreateProduct (inputs);
-
-	    for (i = 0; i < inputs; i++) {
-    	    funzione[0]->CEXLetterali[i] = '-';
-	    }
-	
-		setAlpha (funzione[0], alpha);
+    	setAlpha (funzione[0], alpha);
         XorInput = XorConAlpha(funzione[0]);
         numRi = funzione[0]->NumProducts + inputs;
         
-        // Riempo la matrice, inserendo per righe i vettori 
-        // dell'insieme S. Se ho un don't care in posizione i 
-        // sul vettore j, inserisco alla riga j della matrice 
+        // Riempo la matrice, inserendo per righe i vettori
+        // dell'insieme S. Se ho un don't care in posizione i
+        // sul vettore j, inserisco alla riga j della matrice
         // l'i-esimo vettore canonico.
         bm = bm_new (numRi, inputs);
         RiempiMatrice (bm, XorInput);
+        bm_sort_by_rows (bm);
         
         #if DEBUG_TEST
             printf ("\nLa matrice prima della gauss elimination\n");
             bm_print (bm);
         #endif
 
-		bm_sort_by_rows (bm);
+		// Riduca la matrice utilizzando
+		// il metodo della Gauss Elimination.
 		bm_unique_row_echelon_form (bm);
 		
 		#if DEBUG_TEST
@@ -818,17 +778,20 @@ DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha) {
         
         dbg_printf("\nNumero di vettori linearmente indipendenti di S: %ld\n", bm->rows);
 
+        // Ottengo le righe della matrice, 
+        // che corrispondono ai vettori 
+        // linearmente indipendenti dell'insieme S.
         int* rows = bm_get_row_values(bm);
         
-        while (dimMVS >= 2) {
+        while (dimMVS >= 1 && !result) {
 
-			dbg_printf("\nPossibili scelte di %d vettori linearmente indipendenti da S:\n", dimS);
-            Combination(rows, bm->rows, dimMVS);
-
-            // ...
+			result = Combination(rows, bm->rows, dimMVS, funzione[0], S, b_alpha);
 
             dimMVS--;
         }
+        
+        printf("\n");
+        dbg_bdd_printf(manager, result, inputs, "Ls");
         
         for (i = 0; i < funzione[0]->NumProducts; i++) {
     		DestroyProduct(&XorInput[i]);
@@ -836,14 +799,14 @@ DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha) {
     
 		DestroyProduct(XorInput);
 		DestroyProduct(&funzione[0]->alpha);
-		DestroyProduct(&funzione[0]->CEXLetterali);
-    
+		
 		bm_free(bm);
 		free(XorInput);
 		free(rows);
+
     }
     
-	unlink("S.pla");
+    unlink("S.pla");
     DestroyProduct(&alpha);
     DestroySOP(funzione);
     free(funzione);

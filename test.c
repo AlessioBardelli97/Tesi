@@ -14,19 +14,15 @@ int main(int argc, char** argv) {
 
     /*S = buildS(u, f->on_set[0], f->inputs);
     Cudd_RecursiveDeref(manager, u);*/
+    
+    /*DdNode* Ls = buildMaximumVectorSpace(S, f->inputs, TRUE);
+    write_bdd_pla(manager, Ls, "ls.pla", TRUE);*/
+    
+    DdNode* Ls = buildMaximumVectorSpace(f->on_set[0], f->inputs, FALSE);
+    write_bdd_dot(manager, Ls, "ls.dot");
+    write_bdd_pla(manager, Ls, "ls.pla", FALSE);
 
-	// DdNode* MVS = buildMinimumVectorSpace(S, f->inputs, TRUE);
-
-	/*DdNode* MVS = buildMinimumVectorSpace(f->on_set[0], f->inputs, FALSE);
-
-    if (MVS) {
-    	write_bdd_dot(manager, MVS, "mvs.dot");
-	    write_bdd_pla(manager, MVS, "mvs.pla", FALSE);
-	}*/
-	
-	buildMaximumVectorSpace(f->on_set[0], f->inputs, FALSE);
-
-    free(f->on_set);
+	free(f->on_set);
 	free(f->dc_set);
 	free(f); quit();
 

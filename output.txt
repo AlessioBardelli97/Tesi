@@ -1,0 +1,71 @@
+./test.out input.pla
+Linea letta: .i
+Numero di input della funzione: 5
+Linea letta: .o
+Numero di output della funzione: 1
+Linea letta: 00000
+Output letto: 1
+Linea letta: 00001
+Output letto: 1
+Linea letta: 00100
+Output letto: 1
+Linea letta: 01000
+Output letto: 1
+Linea letta: 01100
+Output letto: 1
+Linea letta: 10000
+Output letto: 1
+Linea letta: 10100
+Output letto: 1
+Linea letta: 11000
+Output letto: 1
+Linea letta: 11100
+Output letto: 1
+
+Numero di punti di S: 9
+
+dimS: 3
+
+Punti dell'insieme S: 0000- 00100 01-00 1--00 
+
+alpha: 00000
+
+La matrice prima della gauss elimination
+0 0 0 0 0 
+0 0 0 0 1 
+0 0 1 0 0 
+0 0 1 0 0 
+0 1 0 0 0 
+0 1 0 0 0 
+1 0 0 0 0 
+
+La matrice dopo la gauss elimination
+1 0 0 0 0 
+0 1 0 0 0 
+0 0 1 0 0 
+0 0 0 0 1 
+
+Numero di vettori linearmente indipendenti di S: 4
+
+****************************************************************
+Possibile scelta di 3 vettori linearmente indipendenti da S:
+1 0 0 0 0 
+0 1 0 0 0 
+0 0 1 0 0 
+
+NumCEXProducts: 0
+
+CEXProducts: 
+
+OutCEX: 
+
+variabiliNC: 
+
+CEXLetterali: ---00
+
+E' contenuto in S, abbiamo finito.
+
+Ls
+: 3 nodes 1 leaves 8 minterms
+---00 1
+

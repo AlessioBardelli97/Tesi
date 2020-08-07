@@ -2,7 +2,7 @@ TARGET = test
 SRC    = $(TARGET).c
 BIN    = $(TARGET).out
 
-ARGS = input1.pla
+ARGS = input.pla
 
 OBJ    = parser.o autosymmetry.o equations.o binmat.o logic.o
 
@@ -19,14 +19,14 @@ run: $(BIN)
 	./$(BIN) $(ARGS)
 	
 valgrind: $(BIN)
-	valgrind -s ./$(BIN) $(ARGS)
+	valgrind ./$(BIN) $(ARGS)
 	
 gdb: $(BIN)
 	gdb -q $(BIN)
 
 clean:
-	rm -f *.o *.dot mvs.pla
+	rm -f ls*
 	
 cleanall: clean
-	rm -f $(BIN)
+	rm -f *.o $(BIN)
 	
