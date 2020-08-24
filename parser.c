@@ -49,7 +49,7 @@ boolean_function_t* parse_pla(DdManager* manager, char* file_path, int alfa)
 
     while((read = fscanf(pla_file, "%s\n", line))!=EOF)
     {
-        dbg_printf("Linea letta: %s\n", line);
+        // dbg_printf("Linea letta: %s\n", line);
 
         if(line[0]=='.' && line[1]=='i')
         {
@@ -61,13 +61,13 @@ boolean_function_t* parse_pla(DdManager* manager, char* file_path, int alfa)
             for(i=0; i<inputs+(alfa*inputs); i++)
                 Cudd_bddIthVar(manager, i);
 
-            dbg_printf("Numero di input della funzione: %i\n", inputs);
+            // dbg_printf("Numero di input della funzione: %i\n", inputs);
         }
         
         else if(line[0]=='.' && line[1]=='o')
         {
             fscanf(pla_file, "%d\n", &outputs);
-            dbg_printf("Numero di output della funzione: %i\n", outputs);
+            // dbg_printf("Numero di output della funzione: %i\n", outputs);
 
             on_set = calloc(outputs, sizeof(DdNode*));
             dc_set = calloc(outputs, sizeof(DdNode*));
@@ -100,7 +100,7 @@ boolean_function_t* parse_pla(DdManager* manager, char* file_path, int alfa)
             {
                 output = out_lines[i];
 
-                dbg_printf("Output letto: %c\n", output);
+                // dbg_printf("Output letto: %c\n", output);
 
                 //il termine presente sulla linea letta deve essere
                 //inserito nell on-set.
@@ -236,15 +236,17 @@ void printPla(DdManager* manager, char* outputfile, DdNode* bdd, int n_var) {
 	} else {
         
         fprintf(f, ".i %d\n", ssize);
-        
         fprintf(f, ".o 1\n");
 
         //indici di variabili da cui il bdd dipende
         int* support = Cudd_SupportIndex(manager, bdd);
 
         Cudd_ForeachCube(manager, bdd, gen, cube, value) {
+        
             for (int i = 0; i < n_var; i++) {
+            
                 if (support[i]) {
+                
                     if (cube[i] == 2)
                         fprintf(f, "%c", '-');
                     else
@@ -261,10 +263,9 @@ void printPla(DdManager* manager, char* outputfile, DdNode* bdd, int n_var) {
 	fclose(f);
 }
 
-void write_bdd_dot(DdManager* m, DdNode* dd, char* filename) {
+void write_bdd2dot(DdManager* m, DdNode* dd, char* filename) {
 
 	dd = Cudd_BddToAdd(m, dd);
-
 	FILE* outfile = fopen(filename,"w");
 	DdNode** ddarray = malloc(sizeof(DdNode*));
 	ddarray[0] = dd;
@@ -273,36 +274,45 @@ void write_bdd_dot(DdManager* m, DdNode* dd, char* filename) {
 	fclose(outfile);
 }
 
-void write_bdd_pla(DdManager* m, DdNode* dd, char* filename, int alpha) {
+void write_bdd2pla(DdManager* m, DdNode* dd, char* filename, int inputs, boolean alpha, boolean pari) {
 
-	int input, i; char tmp[1024];
-	
-	FILE* outfile = fopen(filename, "w+");
-	Cudd_SetStdout(m, outfile);
-	
-	Cudd_bddPrintCover(m, dd, dd);
-	rewind(outfile);
-	fscanf(outfile, "%s", tmp);
-	
-	input = alpha ? strlen(tmp)/2 : strlen(tmp);
-	rewind(outfile);
-	
-	fprintf(outfile, ".i %d\n.o 1\n", input);
-	Cudd_bddPrintCover(m, dd, dd);
-	
-	if (alpha) {
-	
-		rewind(outfile);
-	
-		fgets(tmp, 1024, outfile);
-		fgets(tmp, 1024, outfile);
-		
-		for (i = 0; i < input; i++) {
-			fgetc(outfile);
-			fputc(127, outfile);
-		}
+	DdGen* gen; int* cube, i;
+	CUDD_VALUE_TYPE value;
+
+	FILE *f = fopen(filename, "w");
+
+	if(f == NULL) {
+        fprintf(stderr, "Errore durante l'apertura del file: %s\n", filename);
+        exit(-1);
 	}
-	
-	fclose(outfile);
-	Cudd_SetStdout(m, stdout);
+        
+    fprintf(f, ".i %d\n", inputs);
+    fprintf(f, ".o 1\n");
+        
+    if (alpha) inputs *= 2;
+
+    //indici di variabili da cui il bdd dipende
+    int* support = Cudd_SupportIndex(m, dd);
+
+    Cudd_ForeachCube(m, dd, gen, cube, value) {
+    
+    	i = alpha && !pari ? 1 : 0;
+    
+    	for (; i < inputs; i++) {
+        
+            if (support[i] && cube[i] != 2)
+				fprintf(f, "%d", cube[i]);
+
+			else
+            	fprintf(f, "%c", '-');
+            
+            if (alpha) i++;
+            
+        }
+        
+        fprintf(f, " 1\n");
+    }
+
+    free(support);
+	fclose(f);
 }

@@ -31,7 +31,7 @@ DdNode* buildS(DdNode* u, DdNode* g1, int inputs);
 
 DdNode* extractVectorSpace(DdNode* S, DdNode* lf, int inputs);
 
-DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha);
+DdNode* build_Ls(DdNode* S, int inputs, boolean b_alpha, int* dimResult);
 
 void quit();
 

@@ -469,7 +469,7 @@ void CreaCEX(binmat *bm, SOP *funzione)
     funzione->OutCEX=CreateProduct(numNCan);
     funzione->NumCEXProducts=numNCan;
     
-    funzione->CEXProducts = (vProduct) calloc(funzione->NumCEXProducts,sizeof(Product));
+    /*funzione->CEXProducts = (vProduct) calloc(funzione->NumCEXProducts,sizeof(Product));
     for (i = 0; i < funzione->NumCEXProducts; i++) {
 
     	funzione->CEXProducts[i] = CreateProduct(numVariabili);
@@ -479,7 +479,9 @@ void CreaCEX(binmat *bm, SOP *funzione)
             //lo inizializzo a vuoto 0
             funzione->CEXProducts[i][y] = '0';
         }
-    }
+    }*/
+    
+    funzione->CEXProducts = NULL;
     
     funzione->variabiliNC = (int*)calloc(numNCan,sizeof(int));
     canoniche = (int*) calloc (numCan,sizeof(int));
@@ -516,7 +518,16 @@ void CreaCEX(binmat *bm, SOP *funzione)
 
             //inserisco la non canonica di riferimento
             funzione->variabiliNC[numeroCEX]=ncanoniche[contatore1];
-            //inserisco la non canonica, dritta poich\E8 il segno l'ho gia' salvato a parte
+            
+            funzione->CEXProducts = (vProduct) realloc(funzione->CEXProducts, (numeroCEX+1)*sizeof(Product));
+			funzione->CEXProducts[numeroCEX] = CreateProduct(numVariabili);
+            for (y = 0; y < numVariabili; y++) {
+            
+				//lo inizializzo a vuoto 0
+				funzione->CEXProducts[numeroCEX][y] = '0';
+			}
+			
+            //inserisco la non canonica, dritta poiche' il segno l'ho gia' salvato a parte
             funzione->CEXProducts[numeroCEX][ncanoniche[contatore1]]='1';
             tempSegno=funzione->alpha[ncanoniche[contatore1]];
 
@@ -531,13 +542,12 @@ void CreaCEX(binmat *bm, SOP *funzione)
             numeroCEX++;
         }
     }
-
-	funzione->NumCEXProducts=numeroCEX;
+    
+    funzione->NumCEXProducts=numeroCEX;
 	free(canoniche); free(ncanoniche);
-
 }
 
-void RiempiMatrice(binmat *bm, vProduct *prodotti) {
+void RiempiMatrice(binmat *bm, vProduct prodotti) {
     int j,k,vettoreSpec,input;
     int indiceRiga=0;
     int numProdotti, sum = 0;

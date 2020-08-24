@@ -1,23 +1,7 @@
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include "binmat.h"
-
-
-inline void get_indices (int cols, int row, int col, int* idx, int* eidx) {
-  int pos;
-
-  pos = row * cols + col;
-
-  // determine the index of the array
-  *idx = pos / (g_long_length * 8);
-
-  // determine the bit position of the array
-  *eidx = g_long_length * 8 - 1 - (pos % (g_long_length * 8));
-}
 
 void swap (int* array, int a, int b) {
   int tmp = array[a];

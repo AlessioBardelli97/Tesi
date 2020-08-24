@@ -106,11 +106,11 @@ static DdNode* buildMinimumVectorSpace(binmat* bm, SOP* funzione, boolean b_alph
  * data[] ---> Temporary array to store current combination 
  * i      ---> index of current element in arr[]
  */
-static DdNode* combination(int arr[], int n, int r, int index, int data[], int i, SOP* funzione, DdNode* S, boolean b_alpha) {
+static DdNode* combination(int* arr, int n, int r, int index, int* data, int i, SOP* funzione, DdNode* S, boolean b_alpha) {
 
     // Current cobination is ready, print it 
     if (index == r) {
-
+    
     	binmat* bm = bm_new(r, funzione->NumInputs);
     	bm_set_row_values(bm, data);
 
@@ -128,19 +128,19 @@ static DdNode* combination(int arr[], int n, int r, int index, int data[], int i
     	bm_free(bm);
     	
 		if (Cudd_bddLeq(manager, VS, S)) {
-			printf("\nE' contenuto in S, abbiamo finito.\n");
+			#if DEBUG_TEST
+				printf("\nE' contenuto in S, abbiamo finito.\n");
+			#endif
 			return VS;
 		} else {
-			printf("\nNon e' contenuto.\n");
+			#if DEBUG_TEST
+				printf("\nNon e' contenuto.\n");
+			#endif
 			return NULL;
 		}
-		
-		#if DEBUG_TEST
-			printf("\n****************************************************************\n");
-		#endif
     }
   
-    // When no more elements are there to put in data[] 
+    // When no more elements are there to put in data[]
     if (i >= n)
         return NULL;
   
@@ -712,7 +712,7 @@ Eqns_t* reductionEquations(DdNode* h, int i, int inputs, EQ_manager *eq_man)
 	}
 }
 
-DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha) {
+DdNode* build_Ls(DdNode* S, int inputs, boolean b_alpha, int* dimResult) {
 
 	vProduct XorInput=NULL;
 	binmat *bm=NULL; MO_SOP funzione=NULL;
@@ -730,9 +730,10 @@ DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha) {
     // Inizialmente la dimensione del più
     // grande spazio vettoriale che contiene
     // S è pari alla dimensione di S.
-    int dimMVS = dimS;
+    int dimLs = dimS;
     
-    printPla (manager, "S.pla", S, b_alpha ? 2*inputs : inputs);
+    // printPla (manager, "S.pla", S, b_alpha ? 2*inputs : inputs);
+    write_bdd2pla (manager, S, "S.pla", inputs, b_alpha, TRUE);
     LoadPLA ("S.pla", &funzione, &uscite);
     
     alpha = CreateProduct(inputs);
@@ -783,15 +784,24 @@ DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha) {
         // linearmente indipendenti dell'insieme S.
         int* rows = bm_get_row_values(bm);
         
-        while (dimMVS >= 1 && !result) {
+        if (dimLs > 1)
+	        result = Combination(rows, bm->rows, dimLs, funzione[0], S, b_alpha);
+        
+        while (!result && dimLs > 1) {
+        
+	        dimLs--;
 
-			result = Combination(rows, bm->rows, dimMVS, funzione[0], S, b_alpha);
-
-            dimMVS--;
+			if (dimLs > 1)
+				result = Combination(rows, bm->rows, dimLs, funzione[0], S, b_alpha);
         }
         
-        printf("\n");
-        dbg_bdd_printf(manager, result, inputs, "Ls");
+        if (result) {
+        
+			#ifdef DEBUG_TEST
+				printf("\n");
+			#endif
+			dbg_bdd_printf(manager, result, inputs, "Spazio vettoriale Ls");
+		}
         
         for (i = 0; i < funzione[0]->NumProducts; i++) {
     		DestroyProduct(&XorInput[i]);
@@ -803,14 +813,14 @@ DdNode* buildMaximumVectorSpace(DdNode* S, int inputs, boolean b_alpha) {
 		bm_free(bm);
 		free(XorInput);
 		free(rows);
-
     }
     
     unlink("S.pla");
     DestroyProduct(&alpha);
     DestroySOP(funzione);
     free(funzione);
-
+    
+    *dimResult = dimLs;
     return result;
 }
 

@@ -88,7 +88,7 @@ void SavePLA (MO_SOP OutSOP, int NumOutputs, char *OutputFile);
 void CreaCEX(binmat *bm, SOP *funzione);
 
 //Inizializza la matrice con lo xor tra on-Set e alpha e sistema i - nell'input
-void RiempiMatrice(binmat *bm, vProduct *prodotti);
+void RiempiMatrice(binmat *bm, vProduct prodotti);
 
 //fa lo XOR prima di riempire la matrice
 vProduct XorConAlpha(SOP *funzione);

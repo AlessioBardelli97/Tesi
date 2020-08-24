@@ -12,6 +12,6 @@
 #define dbg_printf(ftm, ...) \
         do { if(DEBUG_TEST) printf(ftm, __VA_ARGS__); } while(0)
 
-#define dbg_bdd_printf(manager, bdd, n, bdd_name) if(DEBUG_TEST){ printf("%s\n", bdd_name); Cudd_PrintSummary(manager, bdd, n, 0); Cudd_bddPrintCover(manager, bdd, bdd);}
+#define dbg_bdd_printf(manager, bdd, n, bdd_name) if(DEBUG_TEST){ printf("%s", bdd_name); Cudd_PrintSummary(manager, bdd, n, 0); Cudd_bddPrintCover(manager, bdd, bdd);}
 
 #endif
