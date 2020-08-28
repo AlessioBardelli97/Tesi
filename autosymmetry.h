@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <cudd.h>
+// #include <cudd.h>
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
@@ -31,7 +31,9 @@ DdNode* buildS(DdNode* u, DdNode* g1, int inputs);
 
 DdNode* extractVectorSpace(DdNode* S, DdNode* lf, int inputs);
 
-DdNode* build_Ls(DdNode* S, int inputs, boolean b_alpha, int* dimResult);
+DdNode* build_Ls_1(DdNode* S, int inputs, boolean b_alpha, int* dimResult);
+
+DdNode* build_Ls_2(DdNode* S, int inputs, boolean b_alpha, int* dimResult);
 
 void quit();
 

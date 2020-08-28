@@ -25,7 +25,7 @@ int main(int argc, char ** argv) {
         s = buildS(u, f->on_set[i], f->inputs);
 
         // Calcola l'insieme Ls.
-        ls = build_Ls(s, f->inputs, TRUE, &dimLs);
+        ls = build_Ls_2(s, f->inputs, TRUE, &dimLs);
         
         dimTotLs += dimLs;
         
