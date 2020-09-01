@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-// #include <cudd.h>
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
@@ -31,9 +30,33 @@ DdNode* buildS(DdNode* u, DdNode* g1, int inputs);
 
 DdNode* extractVectorSpace(DdNode* S, DdNode* lf, int inputs);
 
+/******************************************************************************/
+
+/*
+ * Euristica per il calcolo di Ls.
+ * Partendo dai vettori linearmente indipendenri di S
+ * si considerano un sotto insieme di questi e si vede se lo spazio generato è 
+ * contenuto o uguale a S, in caso affermativo ci si ferma altrimenti 
+ * si considera un altro sottoinsieme. 
+ */
 DdNode* build_Ls_1(DdNode* S, int inputs, boolean b_alpha, int* dimResult);
 
+/*
+ * Procedura ottima per il calcolo di Ls. Partendo dai punti di S
+ * si considerano un sotto insieme linearmente indipendenti di questi 
+ * e si vede se lo spazio generato è contenuto o uguale a S, 
+ * in caso affermativo ci si ferma altrimenti 
+ * si considera un altro sottoinsieme. 
+ */
 DdNode* build_Ls_2(DdNode* S, int inputs, boolean b_alpha, int* dimResult);
+
+/*
+ * Euristica per il calcolo di Ls. 
+ * Simile alla funzione extractVectorSpace,
+ */
+DdNode* build_Ls_3(DdNode* S, int inputs, boolean b_alpha, int* dimResult);
+
+/******************************************************************************/
 
 void quit();
 

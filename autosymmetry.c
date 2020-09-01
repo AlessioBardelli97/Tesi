@@ -163,7 +163,7 @@ static DdNode* Combination_1(int arr[], int n, int r, SOP* fun, DdNode* S, boole
     int* data = calloc(r, sizeof(int));
   
     // Print all combination using temprary array 'data[]' 
-    DdNode* result = Combination_1(arr, n, r, 0, data, 0, fun, S, b_alpha);
+    DdNode* result = combination_1(arr, n, r, 0, data, 0, fun, S, b_alpha);
     
     free(data); 
     return result;
@@ -201,7 +201,7 @@ static DdNode* combination_2(int* arr, int n, int r, int index, int* data, int i
         if (bm->rows == min) {
 
             // Costriusco lo spazio vettoriale generato con i vettori selezionati di S.
-            DdNode* VS = buildMinimumVectorSpace(bm, fun, b_alpha);
+            DdNode* VS = buildMinimumVectorSpace(bm, fun, b_alpha); bm_free(bm);
 
             // Se lo spazio vettoriale generato 
             // è contenuto o uguale a S.
@@ -219,6 +219,7 @@ static DdNode* combination_2(int* arr, int n, int r, int index, int* data, int i
         }
 
         bm_free(bm);
+        return NULL;
     }
   
     // When no more elements are there to put in data[]
@@ -238,7 +239,7 @@ static DdNode* combination_2(int* arr, int n, int r, int index, int* data, int i
 
 static DdNode* Combination_2 (int* points, int numPoints, int r, SOP* fun, DdNode* S, boolean b_alpha) {
 
-    // A temporary array to store all combination one by one 
+	// A temporary array to store all combination one by one 
     int* data = calloc(r, sizeof(int));
 
     // Print all combination using temprary array 'data[]'
@@ -864,14 +865,14 @@ DdNode* build_Ls_1(DdNode* S, int inputs, boolean b_alpha, int* dimResult) {
         int* rows = bm_get_row_values(bm);
         
         if (dimLs > 1)
-	        result = Combination(rows, bm->rows, dimLs, fun[0], S, b_alpha);
+	        result = Combination_1(rows, bm->rows, dimLs, fun[0], S, b_alpha);
         
         while (!result && dimLs > 1) {
         
 	        dimLs--;
 
 			if (dimLs > 1)
-				result = Combination(rows, bm->rows, dimLs, fun[0], S, b_alpha);
+				result = Combination_1(rows, bm->rows, dimLs, fun[0], S, b_alpha);
         }
         
         if (result)
@@ -975,6 +976,11 @@ DdNode* build_Ls_2(DdNode* S, int inputs, boolean b_alpha, int* dimResult) {
     
     *dimResult = dimLs;
     return result;
+}
+
+DdNode* build_Ls_3(DdNode* S, DdNode* lf, int inputs) {
+
+	return NULL;
 }
 
 void quit()

@@ -5,17 +5,27 @@
 
 int main(int argc, char ** argv) {
 
-    init(); double total=0;
+	int begin = 0, stop = 0;
+
+	init(); double total=0;
     DdNode *s=NULL, *u=NULL, *ls=NULL;
     clock_t start, end; int i, dimLs=0, dimTotLs=0, max=0;
     
     boolean_function_t* f = parse_pla(manager, argv[1], TRUE);
     
+    stop = f->outputs;
+    
+    if (argc == 4) {
+		
+		begin = atoi(argv[2]);
+		stop = atoi(argv[3]);
+	}
+    
     // Per ciascun output della funzione trattata
     // effettua il test di autosimmetria.
-    for(i=0; i<f->outputs; i++) {
-    
-    	start = clock();
+    for(i=begin; i<stop; i++) {
+
+        start = clock();
 
         // Unione tra on-set e dc-set.
         u = Cudd_bddOr(manager, f->on_set[i], f->dc_set[i]);
@@ -25,7 +35,7 @@ int main(int argc, char ** argv) {
         s = buildS(u, f->on_set[i], f->inputs);
 
         // Calcola l'insieme Ls.
-        ls = build_Ls_1(s, f->inputs, TRUE, &dimLs);
+        ls = build_Ls_2(s, f->inputs, TRUE, &dimLs);
         
         dimTotLs += dimLs;
         

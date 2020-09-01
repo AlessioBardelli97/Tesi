@@ -50,14 +50,14 @@ int main(int argc, char ** argv)
         Cudd_RecursiveDeref(manager, s);
         Cudd_RecursiveDeref(manager, ls);
         
-        printf("\n%s(%i): \n  Inputs: %i\n  Dimensione di Ls: %i\n  dcs/outputs: %f\n", argv[1], i, f->inputs, (int)degree, (double)(f->dcs/f->outputs));
+        printf("\n%s(%i): \n  Inputs: %i\n  Dimensione di Ls: %i\n", argv[1], i, f->inputs, (int)degree);
 
         total += (double)(end-start);
         
         printf("\n**********************************************************\n");
     }
 
-    printf("\n%s:\n  Inputs: %i\n  Outputs: %i\n  dcs/outputs: %f\n  Tempo totale: %f\n  Autosimmetria media: %lf\n  Autosimmetria massima: %d\n", argv[1], f->inputs, f->outputs, (double)(f->dcs/f->outputs), (total/CLOCKS_PER_SEC), (double)dimTotLs/(double)f->outputs, max);
+    printf("\n%s:\n  Inputs: %i\n  Outputs: %i\n  Tempo totale: %f\n  Autosimmetria media: %lf\n  Autosimmetria massima: %d\n", argv[1], f->inputs, f->outputs, (total/CLOCKS_PER_SEC), (double)dimTotLs/(double)f->outputs, max);
 
     free(f->dc_set);
     free(f->on_set);
