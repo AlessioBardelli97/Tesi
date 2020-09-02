@@ -54,7 +54,7 @@ DdNode* build_Ls_2(DdNode* S, int inputs, boolean b_alpha, int* dimResult);
  * Euristica per il calcolo di Ls. 
  * Simile alla funzione extractVectorSpace,
  */
-DdNode* build_Ls_3(DdNode* S, int inputs, boolean b_alpha, int* dimResult);
+DdNode* build_Ls_3(DdNode* S, int inputs, DdNode* on_set, DdNode* dc_set, int* dimResult);
 
 /******************************************************************************/
 

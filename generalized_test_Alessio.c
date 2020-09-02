@@ -1,7 +1,5 @@
 #include <time.h>
-
 #include "autosymmetry.h"
-#include "parser.h"
 
 int main(int argc, char ** argv) {
 
@@ -26,12 +24,11 @@ int main(int argc, char ** argv) {
 
         // Calcola l'insieme Ls.
         ls = build_Ls_1(s, f->inputs, TRUE, &dimLs);
-        
-        dimTotLs += dimLs;
-        
-        max = dimLs > max ? dimLs : max;
 
         end = clock();
+        
+        dimTotLs += dimLs;
+        max = dimLs > max ? dimLs : max;
 
         Cudd_RecursiveDeref(manager, f->on_set[i]);
         Cudd_RecursiveDeref(manager, f->dc_set[i]);
@@ -40,7 +37,6 @@ int main(int argc, char ** argv) {
         if (ls != NULL) Cudd_RecursiveDeref(manager, ls);
         
         printf("\n%s(%i): \n  Inputs: %i\n  Dimensione di Ls: %i\n", argv[1], i, f->inputs, dimLs);
-        
         printf("\n**********************************************************\n");
 
         total += (double)(end-start);

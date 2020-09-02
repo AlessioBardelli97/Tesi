@@ -652,12 +652,7 @@ DdNode* extractVectorSpace(DdNode* S, DdNode* Ls, int inputs)
     for (int i=0; i<inputs; i++)
         vars[i] = Cudd_bddIthVar(manager, (2*i));
 
-    DdNode* diff;
-    DdNode* tmp1;
-    DdNode* S1;
-    DdNode* tr;
-    DdNode* g1;
-    DdNode* x;
+    DdNode* diff, *tmp1, *S1, *tr, *g1, *x;
 
     S1 = S;
     Cudd_Ref(S);
@@ -804,7 +799,7 @@ DdNode* build_Ls_1(DdNode* S, int inputs, boolean b_alpha, int* dimResult) {
 	dbg_printf("\nNumero di punti di S: %d\n", (int)num_points);
 
 	// Calcolo la dimensione dell'insieme S.
-    int dimS = (int)log2(num_points);
+    int dimS = (int)log(num_points)/log(2);
     dbg_printf("\ndimS: %d\n", dimS);
 
     // Inizialmente la dimensione del più
@@ -910,7 +905,7 @@ DdNode* build_Ls_2(DdNode* S, int inputs, boolean b_alpha, int* dimResult) {
     double num_points = Cudd_CountMinterm(manager, S, inputs);
 	dbg_printf("\nNumero di punti di S: %d\n", (int)num_points);
 
-	int dimS = (int)log2(num_points);
+	int dimS = (int)log(num_points)/log(2);
     dbg_printf("\ndimS: %d\n", dimS);
 
     int dimLs = dimS;
@@ -978,9 +973,25 @@ DdNode* build_Ls_2(DdNode* S, int inputs, boolean b_alpha, int* dimResult) {
     return result;
 }
 
-DdNode* build_Ls_3(DdNode* S, DdNode* lf, int inputs) {
+DdNode* build_Ls_3(DdNode* S, int inputs, DdNode* on_set, DdNode* dc_set, int* dimResult) {
 
-	return NULL;
+    DdNode* u = Cudd_bddOr(manager, on_set, dc_set);
+    Cudd_Ref(u);
+
+	DdNode* Lf_0 = buildLf(on_set, inputs);
+    DdNode* Lf_1 = buildLf(u, inputs);
+
+    int dim_Lf_0 = Cudd_CountMinterm(manager, Lf_0, inputs);
+    int dim_Lf_1 = Cudd_CountMinterm(manager, Lf_1, inputs);
+    
+    DdNode* Ls = dim_Lf_0 >= dim_Lf_1 ? Lf_0 : Lf_1;
+    DdNode* result = extractVectorSpace(S, Ls, inputs);
+
+    int elements = Cudd_CountMinterm(manager, result, inputs);
+    double degree = log(elements)/log(2);
+    *dimResult = (int)degree;
+
+    return result;
 }
 
 void quit()

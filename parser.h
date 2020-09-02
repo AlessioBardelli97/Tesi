@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <cudd.h>
+// #include <cudd.h>
 
 #define MAX_LINE_LENGTH 1024
 
