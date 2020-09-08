@@ -75,6 +75,7 @@ Eqn_t* new_eqn(int eq_size){
     equation->eq = (int*)malloc(eq_size*sizeof(int));
     if(equation->eq == NULL){
         fprintf(stderr, "ERROR: malloc\n");
+        free(equation);
         return NULL;
     }
     equation->n = eq_size;

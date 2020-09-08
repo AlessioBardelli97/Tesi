@@ -640,7 +640,8 @@ DdNode* buildLf(DdNode* g1, int inputs)
 
 DdNode* extractVectorSpace(DdNode* S, DdNode* Ls, int inputs) 
 {
-    DdNode** vars = calloc(2*inputs, sizeof(DdNode*));
+
+	DdNode** vars = calloc(2*inputs, sizeof(DdNode*));
 
     if (vars == NULL)
     {
@@ -721,7 +722,6 @@ DdNode* extractVectorSpace(DdNode* S, DdNode* Ls, int inputs)
     }
 
     Cudd_RecursiveDeref(manager, S1);
-
     free(vars);
 
     return g1;
@@ -799,7 +799,7 @@ DdNode* build_Ls_1(DdNode* S, int inputs, boolean b_alpha, int* dimResult) {
 	dbg_printf("\nNumero di punti di S: %d\n", (int)num_points);
 
 	// Calcolo la dimensione dell'insieme S.
-    int dimS = (int)log(num_points)/log(2);
+    int dimS = (int)log2(num_points);
     dbg_printf("\ndimS: %d\n", dimS);
 
     // Inizialmente la dimensione del più
@@ -905,7 +905,7 @@ DdNode* build_Ls_2(DdNode* S, int inputs, boolean b_alpha, int* dimResult) {
     double num_points = Cudd_CountMinterm(manager, S, inputs);
 	dbg_printf("\nNumero di punti di S: %d\n", (int)num_points);
 
-	int dimS = (int)log(num_points)/log(2);
+	int dimS = (int)log2(num_points);
     dbg_printf("\ndimS: %d\n", dimS);
 
     int dimLs = dimS;
@@ -973,25 +973,46 @@ DdNode* build_Ls_2(DdNode* S, int inputs, boolean b_alpha, int* dimResult) {
     return result;
 }
 
-DdNode* build_Ls_3(DdNode* S, int inputs, DdNode* on_set, DdNode* dc_set, int* dimResult) {
+/*DdNode* build_Ls_3(DdNode* S, int inputs, DdNode* on_set, DdNode* dc_set) {
 
-    DdNode* u = Cudd_bddOr(manager, on_set, dc_set);
+	DdNode* u = Cudd_bddOr(manager, on_set, dc_set);
+    Cudd_Ref(u); DdNode* result = NULL;
+
+	DdNode* Lf_0 = buildLf(on_set, inputs);
+    DdNode* Lf_1 = buildLf(u, inputs);
+    
+    int elem0 = Cudd_CountMinterm(manager, Lf_0, inputs); 
+    int elem1 = Cudd_CountMinterm(manager, Lf_1, inputs);
+    
+    if (elem0 > elem1)
+		result = extractVectorSpace(S, Lf_0, inputs);
+	else
+	    result = extractVectorSpace(S, Lf_1, inputs);
+    
+    Cudd_RecursiveDeref(manager, Lf_0);
+    Cudd_RecursiveDeref(manager, Lf_1);
+    
+    return result;
+}*/
+
+DdNode* build_Ls_3(DdNode* S, int inputs, DdNode* on_set, DdNode* dc_set) {
+
+	DdNode* u = Cudd_bddOr(manager, on_set, dc_set);
     Cudd_Ref(u);
 
 	DdNode* Lf_0 = buildLf(on_set, inputs);
     DdNode* Lf_1 = buildLf(u, inputs);
-
-    int dim_Lf_0 = Cudd_CountMinterm(manager, Lf_0, inputs);
-    int dim_Lf_1 = Cudd_CountMinterm(manager, Lf_1, inputs);
     
-    DdNode* Ls = dim_Lf_0 >= dim_Lf_1 ? Lf_0 : Lf_1;
-    DdNode* result = extractVectorSpace(S, Ls, inputs);
-
-    int elements = Cudd_CountMinterm(manager, result, inputs);
-    double degree = log(elements)/log(2);
-    *dimResult = (int)degree;
-
-    return result;
+    DdNode* result0 = extractVectorSpace(S, Lf_0, inputs);
+    DdNode* result1 = extractVectorSpace(S, Lf_1, inputs);
+    
+    int elem0 = Cudd_CountMinterm(manager, result0, inputs); 
+    int elem1 = Cudd_CountMinterm(manager, result1, inputs);
+    
+    Cudd_RecursiveDeref(manager, Lf_0);
+    Cudd_RecursiveDeref(manager, Lf_1);
+    
+    return elem0 >= elem1 ? result0 : result1;
 }
 
 void quit()

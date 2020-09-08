@@ -28,13 +28,12 @@ int main(int argc, char** argv)
         Cudd_RecursiveDeref(manager, f->dc_set[i]);
         Cudd_RecursiveDeref(manager, lf);
 
-        printf("\n%s(%i): \n  Inputs: %i\n  Dimensione di Ls: %i\n", argv[1], i, f->inputs, (int)degree);
-        printf("\n**********************************************************\n");
+        printf("%s(%i): %.3lf\n", argv[1], i, degree);
 
         total += (double)(end-start);
     }
 
-    printf("\n%s:\n  Inputs: %i\n  Outputs: %i\n  Tempo totale: %f\n  Autosimmetria media: %lf\n  Autosimmetria massima: %d\n", argv[1], f->inputs, f->outputs, (total/CLOCKS_PER_SEC), (double)dimTotLs/(double)f->outputs, max);
+    printf("%s %i %i %.3f %i %f\n", argv[1], f->inputs, f->outputs, (double)dimTotLs/(double)f->outputs, max, (total/CLOCKS_PER_SEC));
     
     free(f->dc_set);
     free(f->on_set);

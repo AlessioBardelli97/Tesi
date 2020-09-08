@@ -4,7 +4,7 @@
 /**
  *  @brief type of equation
  */
-typedef struct equation {
+typedef struct equation {   
     int *eq;                 /**< equation */
     int n;                   /**< equation size */
     struct equation * next;  /**< pointer to the next element */
